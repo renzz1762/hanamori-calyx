@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>HANAMORI CALYX AI v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ INTRO ══ -->
+<div id="introOverlay">
+  <div class="intro-bg-particles" id="introParts"></div>
+  <span class="intro-emoji-float" style="top:15%;left:8%">✨</span>
+  <span class="intro-emoji-float" style="top:25%;right:10%;animation-delay:.8s">🚀</span>
+  <span class="intro-emoji-float" style="bottom:20%;left:12%;animation-delay:1.6s">🎮</span>
+  <span class="intro-emoji-float" style="bottom:30%;right:8%;animation-delay:.4s">⚡</span>
+  <div class="intro-logo-wrap">
+    <div class="intro-logo-ring">
+      <img class="intro-logo-img" id="introLogoImg" src="" alt="HC">
+    </div>
+    <div class="intro-title">HANAMORI CALYX AI</div>
+    <div class="intro-sub">✦ v5.0 Initializing ✦</div>
+    <div class="intro-bar-wrap"><div class="intro-bar"></div></div>
+    <div class="intro-chars" id="introChars"></div>
+  </div>
+</div>
+
+<!-- ══ MAINTENANCE ══ -->
+<div id="maintOverlay">
+  <div class="maint-bg-glass"></div>
+  <div class="maint-bg-anim">
+    <div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div>
+  </div>
+  <div class="maint-grid-lines"></div>
+  <div class="maint-scan-line"></div>
+  <div class="maint-particles" id="maintParticles"></div>
+  <div class="maint-box">
+    <!-- Decorative corner lines -->
+    <div style="position:absolute;top:0;left:0;width:40px;height:40px;border-top:2px solid rgba(255,77,109,.6);border-left:2px solid rgba(255,77,109,.6);border-radius:32px 0 0 0;pointer-events:none"></div>
+    <div style="position:absolute;top:0;right:0;width:40px;height:40px;border-top:2px solid rgba(255,77,109,.6);border-right:2px solid rgba(255,77,109,.6);border-radius:0 32px 0 0;pointer-events:none"></div>
+    <div style="position:absolute;bottom:0;left:0;width:40px;height:40px;border-bottom:2px solid rgba(124,58,237,.5);border-left:2px solid rgba(124,58,237,.5);border-radius:0 0 0 32px;pointer-events:none"></div>
+    <div style="position:absolute;bottom:0;right:0;width:40px;height:40px;border-bottom:2px solid rgba(124,58,237,.5);border-right:2px solid rgba(124,58,237,.5);border-radius:0 0 32px 0;pointer-events:none"></div>
+    <div class="maint-badge"><i class="fa-solid fa-triangle-exclamation"></i> SISTEM MAINTENANCE</div>
+    <div class="maint-icon-ring">
+      <span class="maint-icon-inner">⚙️</span>
+    </div>
+    <div class="maint-title">MAINTENANCE</div>
+    <div class="maint-subtitle">◈ UPGRADE IN PROGRESS ◈</div>
+    <!-- Fun badges -->
+    <div class="maint-fun-row">
+      <span class="maint-fun-badge">☕ Lagi nge-kopi dulu</span>
+      <span class="maint-fun-badge">🤓 Dev lagi kerja keras</span>
+    </div>
+    <div class="maint-text" id="maintText"></div>
+    <!-- COUNTDOWN -->
+    <div class="maint-countdown-wrap">
+      <div class="maint-countdown-label">🕐 Selesai Dalam</div>
+      <div class="maint-countdown-timer">
+        <div class="maint-cd-unit">
+          <div class="maint-cd-num" id="cdHours">00</div>
+          <div class="maint-cd-label">JAM</div>
+        </div>
+        <div class="maint-cd-sep">:</div>
+        <div class="maint-cd-unit">
+          <div class="maint-cd-num" id="cdMins">00</div>
+          <div class="maint-cd-label">MENIT</div>
+        </div>
+        <div class="maint-cd-sep">:</div>
+        <div class="maint-cd-unit">
+          <div class="maint-cd-num" id="cdSecs">00</div>
+          <div class="maint-cd-label">DETIK</div>
+        </div>
+      </div>
+    </div>
+    <!-- SCHEDULE -->
+    <div class="maint-schedule" id="maintSchedule">
+      <div class="maint-schedule-row">
+        <span class="maint-schedule-key">📅 Mulai</span>
+        <span class="maint-schedule-val" id="maintStart">—</span>
+      </div>
+      <div class="maint-schedule-row">
+        <span class="maint-schedule-key">⏰ Selesai</span>
+        <span class="maint-schedule-val" id="maintEnd">—</span>
+      </div>
+    </div>
+    <div class="maint-progress"><div class="maint-progress-bar" id="maintProgressBar" style="width:0%"></div></div>
+    <div class="maint-eta" id="maintEta">Menghitung...</div>
+    <div id="maintSocmedRow" style="display:none;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:2"></div>
+  </div>
+</div>
+
+<!-- ══ BETA OVERLAY ══ -->
+<div id="betaOverlay">
+  <div class="beta-box">
+    <button class="beta-close-btn" onclick="closeBetaOverlay()" title="Tutup">✕</button>
+    <div class="beta-icon">🧪</div>
+    <div class="beta-title">BETA TESTING</div>
+    <div class="beta-sub">◈ VERSI PERCOBAAN ◈</div>
+    <div class="beta-desc">
+      Website ini masih dalam tahap <strong>Beta Testing</strong> — fitur masih terus dikembangkan dan mungkin ada bug. Terima kasih sudah mencoba! 🙏
+    </div>
+    <div class="beta-badges">
+      <span class="beta-badge">⚡ Aktif Dikembangkan</span>
+      <span class="beta-badge">🐛 Bug Mungkin Ada</span>
+      <span class="beta-badge">🔥 Fitur Baru Segera</span>
+    </div>
+    <button class="beta-ok-btn" onclick="closeBetaOverlay()">Mengerti, Lanjut! 🚀</button>
+  </div>
+</div>
+
+<!-- ══ AD OVERLAY ══ -->
+<div id="adOverlay">
+  <div class="ad-box">
+    <div class="ad-badge">📣 PROMO &amp; INFO</div>
+    <button class="ad-close-btn" onclick="closeAdOverlay()" title="Tutup iklan">✕</button>
+    <div id="adContent"></div>
+    <div id="adNavRow" class="ad-nav-row"></div>
+    <div id="adDots" class="ad-dots-row"></div>
+  </div>
+</div>
+
+<!-- ══ REDEEM MODAL ══ -->
+<div id="redeemOverlay" onclick="if(event.target===this)closeRedeem()">
+  <div class="redeem-box">
+    <button class="redeem-close-btn" onclick="closeRedeem()">✕</button>
+    <div class="redeem-icon">🎁</div>
+    <div class="redeem-title">CODE REDEEM</div>
+    <div class="redeem-sub">Masukkan kode VIP untuk unlock file eksklusif!</div>
+    <div class="redeem-input-wrap">
+      <input class="redeem-input" id="redeemInput" placeholder="Masukkan kode di sini..." maxlength="32" onkeydown="if(event.key==='Enter')doRedeem()">
+      <button class="redeem-btn" onclick="doRedeem()">🔓 Redeem</button>
+    </div>
+    <div id="redeemMsg" class="redeem-msg"></div>
+    <div id="redeemFiles" class="redeem-files"></div>
+  </div>
+</div>
+
+<!-- ══ DRAWER OVERLAY ══ -->
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- ══ DRAWER ══ -->
+<div id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo-row">
+      <img class="drawer-logo-img" id="drawerLogoImg" src="" alt="HC">
+      <div>
+        <div class="drawer-logo-txt">HANAMORI CALYX</div>
+        <div style="font-size:.55rem;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px">AI v5.0</div>
+      </div>
+    </div>
+    <div class="drawer-clock"><i class="fa-regular fa-clock" style="font-size:.75rem"></i><span id="drawerTime">00:00</span></div>
+    <div class="drawer-clock-date" id="drawerDate">--</div>
+  </div>
+  <div class="drawer-menu">
+    <div class="drawer-section-label">Navigasi</div>
+    <div class="drawer-item active-page" id="dmHome" onclick="drawerNav('home','dmHome')"><i class="fa-solid fa-house"></i>Home — AI Chat</div>
+    <div class="drawer-item" id="dmUpdate" onclick="drawerNav('update','dmUpdate')"><i class="fa-solid fa-bell"></i>New Update</div>
+    <div class="drawer-item" id="dmSave" onclick="drawerNav('save','dmSave')"><i class="fa-solid fa-floppy-disk"></i>Save Script</div>
+    <div class="drawer-item" id="dmInfo" onclick="drawerNav('info','dmInfo')"><i class="fa-solid fa-circle-info"></i>Info &amp; Developer</div>
+    <div class="drawer-sep"></div>
+    <div class="drawer-section-label">Tools</div>
+    <div class="drawer-item" onclick="copyCode();closeDrawer()"><i class="fa-solid fa-clipboard"></i>Salin Code Aktif</div>
+    <div class="drawer-item" onclick="saveScript();closeDrawer()"><i class="fa-solid fa-download"></i>Simpan Script</div>
+    <div class="drawer-item" onclick="if(currentLang==='html'){openPreview();}closeDrawer()"><i class="fa-solid fa-globe"></i>Preview Website</div>
+    <div class="drawer-sep"></div>
+    <div class="drawer-section-label">Lainnya</div>
+    <div class="drawer-item" onclick="clearChat();closeDrawer()"><i class="fa-solid fa-trash"></i>Hapus Riwayat Chat</div>
+    <div style="height:1px;background:var(--border);margin:8px 0"></div>
+    <div class="chat-new-btn" onclick="newChat();closeDrawer()"><i class="fa-solid fa-plus"></i><span>Chat Baru</span></div>
+    <div class="chat-history-label">Riwayat Chat</div>
+    <div id="chatHistoryList"></div>
+  </div>
+  <div class="drawer-footer">
+    <div class="drawer-status"><div class="drawer-status-dot"></div><span id="drawerStatus">AI Online &amp; Siap</span></div>
+  </div>
+</div>
+
+<!-- ══ PREVIEW MODAL ══ -->
+<div id="previewBackdrop" onclick="handleBackdropClick(event)">
+  <div id="previewModal">
+    <div class="preview-modal-bar">
+      <div class="preview-modal-drag">
+        <div class="preview-modal-dot red" onclick="closePreview()"></div>
+        <div class="preview-modal-dot yellow" onclick="refreshPreviewModal()"></div>
+        <div class="preview-modal-dot green" onclick="toggleFullPreview()"></div>
+      </div>
+      <div class="preview-modal-title">🌐 <span id="previewModalUrl">preview</span></div>
+      <span style="margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);flex-shrink:0" id="previewInfo">—</span>
+      <button class="preview-expand-btn" onclick="toggleFullPreview()" style="margin-left:6px">⛶ Full</button>
+      <button class="preview-close-btn" onclick="closePreview()">✕ KELUAR</button>
+    </div>
+    <div class="preview-frame-container"><iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms" title="Preview"></iframe></div>
+    <div class="preview-toolbar-bottom">
+      <button class="toolbar-btn" onclick="copyCode()" style="color:var(--accent);font-size:.62rem;padding:5px 10px">📋 Salin</button>
+      <button class="toolbar-btn" onclick="saveScript()" style="color:var(--success);font-size:.62rem;padding:5px 10px">💾 Simpan</button>
+      <button class="toolbar-btn" onclick="openPreviewNewTab()" style="font-size:.62rem;padding:5px 10px">↗ Tab Baru</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <div class="logo-wrap">
+      <div class="logo-icon" id="headerLogo">
+        <span id="headerLogoEmoji">🎮</span>
+        <img id="headerLogoImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px;">
+      </div>
+      <div>
+        <div class="logo-text">HANAMORI CALYX AI</div>
+        <div class="logo-sub">v5.0 Roblox Expert • Anti-Jailbreak • Smart</div>
+      </div>
+    </div>
+    <div class="header-clock">
+      <div class="clock-time" id="headerTime">00:00</div>
+      <div class="clock-date" id="headerDate">--</div>
+    </div>
+    <div class="header-badge">● AI ONLINE</div>
+  </header>
+
+  <div class="pages">
+
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="home-grid">
+        <!-- Chat Panel -->
+        <div class="left-panel">
+          <div class="panel-header">
+            <div class="panel-icon blue">💬</div>
+            <span class="panel-title">AI Chat</span>
+            <button id="floatPrevBtn" onclick="openPreview()" style="display:none;padding:4px 10px;border-radius:7px;font-size:.6rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.08);color:#10b981;cursor:pointer;flex-shrink:0" title="Preview HTML">🌐 Preview</button>
+            <button id="redeemHeaderBtn" onclick="openRedeem()" title="Code Redeem" style="display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:7px;font-size:.6rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(124,58,237,.5);background:rgba(124,58,237,.08);color:#a78bfa;cursor:pointer;flex-shrink:0;transition:all .2s">🎁 <span>Redeem</span></button>
+            <div class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="message ai">
+              <div class="avatar ai">
+                <img id="aiAvatarWelcomeImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;">
+                <span id="aiAvatarEmoji">🤖</span>
+              </div>
+              <div class="bubble">
+                <div class="ai-name-badge">HANAMORI CALYX <span class="ai-verified-icon"><svg viewBox="0 0 12 10" xmlns="http://www.w3.org/2000/svg"><polyline points="1,5 4.5,8.5 11,1.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+                Halo! Aku <strong>HANAMORI CALYX AI v5.0</strong> 🚀<br><br>
+                Tanya apa aja — ngobrol, coding, website, <strong>script Roblox Studio</strong>, matematika, dll!<br><br>
+                <span style="color:var(--muted);font-size:.7rem">🎮 Mau script Fly, Chat Tag, Hotbar, Admin Panel, dll? Tinggal bilang aja bro!</span>
+                <span style="color:var(--muted);font-size:.7rem;display:block;margin-top:4px">📋 Ketuk tombol <strong>Salin</strong> di bawah pesan untuk menyalin teks!</span>
+                <span class="msg-time" id="welcomeTime"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-area">
+            <input type="file" id="inputImage" accept="image/*" style="display:none" onchange="handleFileSelect(event,'image')">
+            <input type="file" id="inputVideo" accept="video/*" style="display:none" onchange="handleFileSelect(event,'video')">
+            <input type="file" id="inputFile" accept="*/*" style="display:none" onchange="handleFileSelect(event,'file')">
+            <div class="voice-indicator" id="voiceIndicator">
+              <div class="voice-bars"><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div></div>
+              <span>Sedang merekam... ketuk mic untuk berhenti</span>
+            </div>
+            <div class="attach-row">
+              <button class="attach-icon-btn" onclick="showComingSoonOverlay('Foto')"><i class="fa-solid fa-image" style="color:#00d4ff"></i> Foto</button>
+              <button class="attach-icon-btn" onclick="showComingSoonOverlay('Video')"><i class="fa-solid fa-video" style="color:#ff4d6d"></i> Video</button>
+              <button class="attach-icon-btn" onclick="showComingSoonOverlay('File')"><i class="fa-solid fa-file-arrow-up" style="color:#7c3aed"></i> File</button>
+              <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Kirim pesan suara"><i class="fa-solid fa-microphone"></i></button>
+            </div>
+            <div class="pending-attach-wrap" id="pendingAttachWrap">
+              <img id="pendingThumb" class="pending-attach-thumb" src="" alt="" style="display:none">
+              <div class="pending-attach-info"><div class="pending-attach-name" id="pendingName"></div><div class="pending-attach-size" id="pendingSize"></div></div>
+              <button class="pending-attach-remove" onclick="clearPendingAttach()">✕</button>
+            </div>
+            <div class="input-row">
+              <textarea class="prompt-input" id="promptInput" placeholder="Tanya apa aja, minta script Roblox, website, math..." rows="2" onkeydown="handleKey(event)"></textarea>
+              <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden elements for code state (no longer shown as panel) -->
+        <div style="display:none">
+          <span id="filename"></span>
+          <span id="langLabel"></span>
+          <span id="lineCount"></span>
+          <span id="charCount"></span>
+          <div id="scriptTabsWrap"><div id="scriptTabs"></div></div>
+          <div id="codeWrapper"></div>
+          <div id="fileBtnBar"></div>
+          <button id="copyBtn"></button>
+          <button id="saveBtn"></button>
+          <button id="dlBtn"></button>
+          <button id="prevBtn"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPDATE -->
+    <div class="page" id="page-update">
+      <div class="page-title"><i class="fa-solid fa-bell" style="color:var(--accent)"></i>New Update</div>
+      <div id="updateList"></div>
+    </div>
+
+    <!-- SAVE -->
+    <div class="page" id="page-save">
+      <div class="save-header">
+        <div class="page-title" style="border:none;padding:0"><i class="fa-solid fa-floppy-disk" style="color:var(--accent)"></i>Save Script</div>
+        <div class="save-count" id="saveCount">0 script</div>
+      </div>
+      <div id="saveList"></div>
+    </div>
+
+    <!-- INFO -->
+    <div class="page" id="page-info">
+      <div class="info-bg-overlay"></div>
+      <div class="info-hero">
+        <!-- Avatar dengan centang biru REAL -->
+        <div class="info-avatar-wrap">
+          <div class="info-avatar"><img id="infoAvatarImg" src="" alt="Dev" style="width:100%;height:100%;object-fit:cover;"></div>
+          <!-- Centang biru real seperti Twitter/Instagram verified -->
+          <div class="verified-badge" title="Akun Terverifikasi">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91-1.01-1.01-2.52-1.27-3.91-.81C14.67 2.88 13.43 2 12 2s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81-1.01 1.01-1.27 2.52-.81 3.91C2.88 9.33 2 10.57 2 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91 1.01 1.01 2.52 1.27 3.91.81C9.33 21.12 10.57 22 12 22s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81 1.01-1.01 1.27-2.52.81-3.91C21.12 14.67 22 13.43 22 12h.25zm-4.07 2.61l-5.34 5.28-2.87-2.87a.75.75 0 1 0-1.06 1.06l3.4 3.4a.75.75 0 0 0 1.06 0l5.87-5.81a.75.75 0 1 0-1.06-1.06z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="info-dev-name" id="devName">Rahman X Cika
+          <!-- Centang biru inline juga -->
+          <svg viewBox="0 0 24 24" width="18" height="18" style="flex-shrink:0;fill:#1d9bf0;filter:drop-shadow(0 0 4px rgba(29,155,240,.5))" title="Terverifikasi">
+            <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91-1.01-1.01-2.52-1.27-3.91-.81C14.67 2.88 13.43 2 12 2s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81-1.01 1.01-1.27 2.52-.81 3.91C2.88 9.33 2 10.57 2 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91 1.01 1.01 2.52 1.27 3.91.81C9.33 21.12 10.57 22 12 22s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81 1.01-1.01 1.27-2.52.81-3.91C21.12 14.67 22 13.43 22 12h.25zm-4.07 2.61l-5.34 5.28-2.87-2.87a.75.75 0 1 0-1.06 1.06l3.4 3.4a.75.75 0 0 0 1.06 0l5.87-5.81a.75.75 0 1 0-1.06-1.06z"/>
+          </svg>
+        </div>
+        <div class="info-dev-role" id="devRole">Lead Developer &amp; UI/UX Designer</div>
+        <div class="info-status"><div class="info-status-dot"></div><span id="appVersion">Sistem Online (v5.0.0)</span></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title"><i class="fa-solid fa-circle-info"></i> Informasi Project</div>
+        <div class="info-row-desc"><strong>HANAMORI CALYX AI v5.0</strong> — AI expert Roblox Studio serba bisa: Chat Tag, Fly GUI, Hotbar, Admin Panel, Freecam, Music Player, Sprint, Overhead, dan semua script GUI. Coding lengkap, ngobrol, website, matematika, voice input, multi-script, anti-jailbreak ultra. By HANAMORI CALYX AI.</div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title"><i class="fa-solid fa-code"></i> Spesifikasi Teknis</div>
+        <div class="info-row"><span class="info-row-label">Model AI</span><span class="info-row-value">Llama 4 Scout (OpenRouter)</span></div>
+        <div class="info-row"><span class="info-row-label">Max Tokens</span><span class="info-row-value">8192 tokens</span></div>
+        <div class="info-row"><span class="info-row-label">Voice Input</span><span class="info-row-value">Web Speech API</span></div>
+        <div class="info-row"><span class="info-row-label">Multi Script</span><span class="info-row-value">✅ Tab Support</span></div>
+        <div class="info-row"><span class="info-row-label">Roblox Expert</span><span class="info-row-value">✅ GUI + LocalScript</span></div>
+        <div class="info-row"><span class="info-row-label">Versi</span><span class="info-row-value" id="versionVal">v5.0.0</span></div>
+      </div>
+      <div class="connect-section">
+        <div class="connect-title"><i class="fa-solid fa-users"></i> Connect With Me</div>
+        <div class="social-grid">
+          <a class="social-btn wa" id="linkWA" href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
+          <a class="social-btn ig" id="linkIG" href="#" target="_blank"><i class="fa-brands fa-instagram"></i>Instagram</a>
+          <a class="social-btn tt" id="linkTT" href="#" target="_blank"><i class="fa-brands fa-tiktok"></i>TikTok</a>
+          <a class="social-btn dc" id="linkDC" href="#" target="_blank"><i class="fa-brands fa-discord"></i>Discord</a>
+        </div>
+      </div>
+      <div class="info-footer">DEVELOPER : &copy; <span id="infoYear"></span> RAHMAN X CIKA OFC 18 &nbsp;|&nbsp; By HANAMORI CALYX AI</div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item active" id="navHome" onclick="navTo('home',this)"><i class="fa-solid fa-house"></i>Home</div>
+    <div class="nav-item" id="navUpdate" onclick="navTo('update',this)">
+      <i class="fa-solid fa-bell"></i>
+      <span class="nav-badge" id="updateBadge"></span>
+      Update
+    </div>
+    <div class="nav-item" id="navSave" onclick="navTo('save',this)"><i class="fa-solid fa-floppy-disk"></i>Save</div>
+    <div class="nav-item" id="navInfo" onclick="navTo('info',this)"><i class="fa-solid fa-circle-info"></i>Info</div>
+  </nav>
+</div>
+
+<script src="iklan.js"></script>
+<script src="redemcode.js"></script>
+<script src="backpackredem.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
