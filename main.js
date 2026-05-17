@@ -1780,50 +1780,22 @@ async function sendMessage() {
   try {
     let reply = '';
 
-    /* ══ OVERCHAT API ══ */
+    /* ══ PROXY API ══ */
     const allMessages = [
-      { id: crypto.randomUUID(), role: 'system', content: SYSTEM },
+      { role: 'system', content: SYSTEM },
       ...chatHistory.map(m => ({
-        id: crypto.randomUUID(),
         role: m.role,
         content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
       }))
     ];
 
-    const overchatBody = {
-      chatId: _overchatSession.chatId,
-      model: 'claude-haiku-4-5-20251001',
-      messages: allMessages,
-      personaId: 'claude-haiku-4-5-landing',
-      frequency_penalty: 0,
-      max_tokens: 4000,
-      presence_penalty: 0,
-      stream: true,
-      temperature: 0.5,
-      top_p: 0.95,
-    };
-
-    const overchatHeaders = {
-      'sec-ch-ua-platform': '"Android"',
-      'x-device-uuid': _overchatSession.deviceId,
-      'sec-ch-ua': '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
-      'sec-ch-ua-mobile': '?1',
-      'x-device-language': 'id-ID',
-      'x-device-platform': 'web',
-      'x-device-version': '1.0.44',
-      'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36',
-      'accept': '*/*',
-      'content-type': 'application/json',
-      'origin': 'https://overchat.ai',
-      'referer': 'https://overchat.ai/',
-      'accept-language': 'id-ID,id;q=0.9',
-      'priority': 'u=1, i',
-    };
-
-    const res = await fetch('https://api.overchat.ai/v1/chat/completions', {
+    const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: overchatHeaders,
-      body: JSON.stringify(overchatBody),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: allMessages,
+        temperature: 0.5,
+      }),
     });
 
     if (!res.ok) {
@@ -2119,4 +2091,3 @@ function hlGeneric(code) {
     return h;
   }).join('\n');
 }
-  
