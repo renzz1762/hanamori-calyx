@@ -1,90 +1,124 @@
-/* ================================================================
-   ╔══════════════════════════════════════════════════════════╗
-   ║     HANAMORI CALYX AI — Vercel API Proxy                ║
-   ║     By renzzzzofc18 | v5.3 (fixed)                     ║
-   ║     Base: https://overchat.ai                           ║
-   ╚══════════════════════════════════════════════════════════╝
-================================================================ */
+const crypto = require("node:crypto");
 
-const crypto = require("node:crypto"); // ← fix: ganti import → require
+const API = "https://app.unlimitedai.chat/api/chat";
 
-const OVERCHAT_API = "https://api.overchat.ai/v1/chat/completions";
+function parseSetCookie(headers) {
+  const result = {};
+  const setCookie =
+    typeof headers.getSetCookie === "function"
+      ? headers.getSetCookie()
+      : headers.get("set-cookie")
+        ? [headers.get("set-cookie")]
+        : [];
 
-// chatId & deviceId — hardcode biar stabil (public API, aman)
-const DEVICE_UUID = "d4af2528-6c44-40d7-853c-81a1f719d686";
-const CHAT_ID = "hanamori-calyx-" + "a1b2c3d4e5f6"; // statis biar sesi konsisten
+  for (const item of setCookie) {
+    const first = item.split(";")[0];
+    const index = first.indexOf("=");
+    if (index !== -1) {
+      const key = first.slice(0, index).trim();
+      const value = first.slice(index + 1).trim();
+      result[key] = value;
+    }
+  }
+  return result;
+}
 
-module.exports = async function handler(req, res) { // ← fix: ganti export default → module.exports
-  // CORS headers
+function buildCookie(deviceId, chatId, extraCookies = {}) {
+  const cookies = {
+    NEXT_LOCALE: "id",
+    u_device_id: deviceId,
+    home_chat_id: chatId,
+    ...extraCookies,
+  };
+  return Object.entries(cookies)
+    .map(([k, v]) => `${k}=${v}`)
+    .join("; ");
+}
+
+module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
+  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") {
     return res.status(405).json({ error: { message: "Method not allowed" } });
   }
 
   try {
-    const body = req.body;
-    const messages = body.messages || [];
-    const temperature = body.temperature ?? 0.5;
+    const { messages = [] } = req.body;
 
-    // Format messages — overchat pakai id di setiap message
-    const formattedMessages = messages.map((m) => ({
-      id: crypto.randomUUID(),
-      role: m.role,
-      content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
-    }));
+    const chatId = crypto.randomUUID();
+    const deviceId = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
 
-    const overBody = {
-      chatId: CHAT_ID,
-      model: "claude-haiku-4-5-20251001",
+    // Ambil system prompt (jika ada) dan gabungkan ke pesan pertama user
+    const systemMsg = messages.find((m) => m.role === "system");
+    const chatMessages = messages.filter((m) => m.role !== "system");
+
+    // Format pesan untuk Unlimited AI
+    const formattedMessages = chatMessages.map((m) => {
+      const id = crypto.randomUUID();
+      const content = typeof m.content === "string" ? m.content : JSON.stringify(m.content);
+      return {
+        id,
+        role: m.role,
+        content,
+        parts: [{ type: "text", text: content }],
+        createdAt,
+      };
+    });
+
+    // Tambah assistant placeholder di akhir (dibutuhkan Unlimited AI)
+    const assistantId = crypto.randomUUID();
+    formattedMessages.push({
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      parts: [{ type: "text", text: "" }],
+      createdAt,
+    });
+
+    const body = {
+      chatId,
       messages: formattedMessages,
-      personaId: "claude-haiku-4-5-landing",
-      frequency_penalty: 0,
-      max_tokens: 4000,
-      presence_penalty: 0,
-      stream: true, // pakai streaming seperti referensi
-      temperature,
-      top_p: 0.95,
+      selectedChatModel: "chat-model-reasoning",
+      selectedCharacter: null,
+      selectedStory: null,
+      deviceId,
+      locale: "id",
     };
 
     const headers = {
       "sec-ch-ua-platform": `"Android"`,
-      "x-device-uuid": DEVICE_UUID,
-      "sec-ch-ua": `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
-      "sec-ch-ua-mobile": "?1",
-      "x-device-language": "id-ID",
-      "x-device-platform": "web",
-      "x-device-version": "1.0.44",
       "user-agent":
         "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
-      accept: "*/*",
+      "sec-ch-ua": `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
       "content-type": "application/json",
-      origin: "https://overchat.ai",
-      referer: "https://overchat.ai/",
-      "accept-language": "id-ID,id;q=0.9",
+      "sec-ch-ua-mobile": "?1",
+      "x-next-intl-locale": "id",
+      accept: "*/*",
+      origin: "https://app.unlimitedai.chat",
+      referer: "https://app.unlimitedai.chat/id",
+      "accept-language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+      cookie: buildCookie(deviceId, chatId),
       priority: "u=1, i",
     };
 
-    const response = await fetch(OVERCHAT_API, {
+    const response = await fetch(API, {
       method: "POST",
       headers,
-      body: JSON.stringify(overBody),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const text = await response.text();
       return res.status(response.status).json({
-        error: { message: `Overchat error ${response.status}: ${text}` },
+        error: { message: `Unlimited AI error ${response.status}: ${text}` },
       });
     }
 
-    // Baca SSE stream — persis logika dari referensi
+    // Baca stream — format: tiap baris JSON dengan { type: "delta", delta: "..." }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
 
@@ -96,30 +130,22 @@ module.exports = async function handler(req, res) { // ← fix: ganti export def
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-
       const lines = buffer.split("\n");
       buffer = lines.pop() || "";
 
       for (const rawLine of lines) {
         const line = rawLine.trim();
-        if (!line.startsWith("data:")) continue;
-
-        const data = line.slice(5).trim();
-        if (!data || data === "[DONE]") continue;
-
+        if (!line) continue;
         try {
-          const json = JSON.parse(data);
-          const content = json.choices?.[0]?.delta?.content;
-          if (typeof content === "string") {
-            answer += content;
+          const json = JSON.parse(line);
+          if (json.type === "delta" && typeof json.delta === "string") {
+            answer += json.delta;
           }
-        } catch {
-          // skip malformed chunk
-        }
+        } catch {}
       }
     }
 
-    // Return dalam format OpenAI-compatible yang dipakai main.js
+    // Return format OpenAI-compatible
     return res.status(200).json({
       choices: [
         {
