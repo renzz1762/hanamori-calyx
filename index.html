@@ -1,727 +1,380 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Chat — Claude Haiku</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --surface2: #1a1a26;
-      --border: #2a2a3d;
-      --accent: #7c6fff;
-      --accent2: #ff6fbc;
-      --text: #e8e8f0;
-      --muted: #6b6b88;
-      --user-bg: #1e1e30;
-      --ai-bg: #131320;
-      --glow: rgba(124, 111, 255, 0.15);
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'IBM Plex Mono', monospace;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Animated background */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(124,111,255,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 50% at 80% 80%, rgba(255,111,188,0.06) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Header */
-    header {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(10,10,15,0.9);
-      backdrop-filter: blur(12px);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .logo-text {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 18px;
-      letter-spacing: -0.5px;
-    }
-
-    .logo-text span {
-      color: var(--accent);
-    }
-
-    .badge {
-      font-size: 10px;
-      padding: 3px 8px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .status-dot {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .dot {
-      width: 6px;
-      height: 6px;
-      background: #4ade80;
-      border-radius: 50%;
-      animation: pulse-dot 2s infinite;
-    }
-
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    /* Chat area */
-    .chat-wrapper {
-      flex: 1;
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
-    }
-
-    #chat::-webkit-scrollbar { width: 4px; }
-    #chat::-webkit-scrollbar-track { background: transparent; }
-    #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    /* Welcome screen */
-    .welcome {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      gap: 16px;
-      padding: 40px 20px;
-      text-align: center;
-      animation: fade-up 0.6s ease both;
-    }
-
-    .welcome-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin-bottom: 8px;
-      box-shadow: 0 0 40px var(--glow);
-    }
-
-    .welcome h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-
-    .welcome p {
-      font-size: 13px;
-      color: var(--muted);
-      max-width: 300px;
-      line-height: 1.6;
-    }
-
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    .suggestion-btn {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      padding: 8px 14px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .suggestion-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(124,111,255,0.08);
-    }
-
-    /* Message bubbles */
-    .msg {
-      display: flex;
-      gap: 12px;
-      max-width: 720px;
-      width: 100%;
-      margin: 0 auto;
-      animation: fade-up 0.3s ease both;
-    }
-
-    @keyframes fade-up {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .msg.user { flex-direction: row-reverse; }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      font-family: 'Syne', sans-serif;
-    }
-
-    .avatar.user-av {
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      color: #fff;
-    }
-
-    .avatar.ai-av {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      box-shadow: 0 0 20px var(--glow);
-    }
-
-    .bubble {
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 13.5px;
-      line-height: 1.7;
-      max-width: calc(100% - 56px);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .msg.user .bubble {
-      background: var(--user-bg);
-      border: 1px solid #2a2a45;
-      border-top-right-radius: 4px;
-      color: var(--text);
-    }
-
-    .msg.ai .bubble {
-      background: var(--ai-bg);
-      border: 1px solid var(--border);
-      border-top-left-radius: 4px;
-      color: var(--text);
-    }
-
-    /* Typing indicator */
-    .typing-indicator {
-      display: flex;
-      gap: 4px;
-      padding: 4px 0;
-    }
-
-    .typing-indicator span {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: bounce 1.2s infinite;
-    }
-
-    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes bounce {
-      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-      40% { transform: translateY(-6px); opacity: 1; }
-    }
-
-    /* Input area */
-    .input-area {
-      position: relative;
-      z-index: 10;
-      padding: 16px;
-      border-top: 1px solid var(--border);
-      background: rgba(10,10,15,0.95);
-      backdrop-filter: blur(12px);
-    }
-
-    .input-box {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 10px 10px 16px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .input-box:focus-within {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(124,111,255,0.12);
-    }
-
-    #user-input {
-      flex: 1;
-      background: none;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13.5px;
-      resize: none;
-      max-height: 120px;
-      line-height: 1.6;
-      padding: 2px 0;
-    }
-
-    #user-input::placeholder { color: var(--muted); }
-
-    #user-input::-webkit-scrollbar { width: 3px; }
-    #user-input::-webkit-scrollbar-thumb { background: var(--border); }
-
-    .send-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: opacity 0.2s, transform 0.15s;
-    }
-
-    .send-btn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.05); }
-    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-    .send-btn svg { width: 16px; height: 16px; fill: #fff; }
-
-    .input-footer {
-      display: flex;
-      justify-content: center;
-      margin-top: 8px;
-      font-size: 10px;
-      color: var(--muted);
-      gap: 4px;
-    }
-
-    .input-footer span { color: var(--accent); }
-
-    /* Clear btn */
-    .clear-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--muted);
-      cursor: pointer;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      padding: 4px 10px;
-      transition: all 0.2s;
-    }
-    .clear-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-
-    /* Error toast */
-    .error-toast {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2d1a1a;
-      border: 1px solid #7f1d1d;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 12px;
-      color: #fca5a5;
-      z-index: 999;
-      animation: fade-up 0.3s ease;
-    }
-
-    @media (max-width: 480px) {
-      header { padding: 12px 16px; }
-      .logo-text { font-size: 16px; }
-      #chat { padding: 16px 12px; }
-      .input-area { padding: 12px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>HANAMORI CALYX AI v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <div class="logo-icon">AI</div>
-    <div class="logo-text">Over<span>Chat</span></div>
-    <div class="badge">Claude Haiku</div>
-  </div>
-  <div class="header-right">
-    <div class="status-dot">
-      <div class="dot"></div>
-      <span>Online</span>
+<!-- ══ INTRO ══ -->
+<div id="introOverlay">
+  <div class="intro-bg-particles" id="introParts"></div>
+  <span class="intro-emoji-float" style="top:15%;left:8%">✨</span>
+  <span class="intro-emoji-float" style="top:25%;right:10%;animation-delay:.8s">🚀</span>
+  <span class="intro-emoji-float" style="bottom:20%;left:12%;animation-delay:1.6s">🎮</span>
+  <span class="intro-emoji-float" style="bottom:30%;right:8%;animation-delay:.4s">⚡</span>
+  <div class="intro-logo-wrap">
+    <div class="intro-logo-ring">
+      <img class="intro-logo-img" id="introLogoImg" src="" alt="HC">
     </div>
-    <button class="clear-btn" onclick="clearChat()">Hapus Chat</button>
+    <div class="intro-title">HANAMORI CALYX AI</div>
+    <div class="intro-sub">✦ v5.0 Initializing ✦</div>
+    <div class="intro-bar-wrap"><div class="intro-bar"></div></div>
+    <div class="intro-chars" id="introChars"></div>
   </div>
-</header>
+</div>
 
-<div class="chat-wrapper">
-  <div id="chat">
-    <div class="welcome" id="welcome">
-      <div class="welcome-icon">✦</div>
-      <h2>Halo! Ada yang bisa dibantu?</h2>
-      <p>Tanya apa saja — aku siap membantu kamu sekarang.</p>
-      <div class="suggestions">
-        <button class="suggestion-btn" onclick="fillSuggestion('Ceritakan tentang dirimu')">Ceritakan tentang dirimu</button>
-        <button class="suggestion-btn" onclick="fillSuggestion('Buatkan puisi tentang hujan')">Buatkan puisi tentang hujan</button>
-        <button class="suggestion-btn" onclick="fillSuggestion('Apa itu kecerdasan buatan?')">Apa itu AI?</button>
-        <button class="suggestion-btn" onclick="fillSuggestion('Bantu aku debugging kode JavaScript')">Bantu debugging JS</button>
+<!-- ══ MAINTENANCE ══ -->
+<div id="maintOverlay">
+  <div class="maint-bg-glass"></div>
+  <div class="maint-bg-anim">
+    <div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div>
+  </div>
+  <div class="maint-grid-lines"></div>
+  <div class="maint-scan-line"></div>
+  <div class="maint-particles" id="maintParticles"></div>
+  <div class="maint-box">
+    <!-- Decorative corner lines -->
+    <div style="position:absolute;top:0;left:0;width:40px;height:40px;border-top:2px solid rgba(255,77,109,.6);border-left:2px solid rgba(255,77,109,.6);border-radius:32px 0 0 0;pointer-events:none"></div>
+    <div style="position:absolute;top:0;right:0;width:40px;height:40px;border-top:2px solid rgba(255,77,109,.6);border-right:2px solid rgba(255,77,109,.6);border-radius:0 32px 0 0;pointer-events:none"></div>
+    <div style="position:absolute;bottom:0;left:0;width:40px;height:40px;border-bottom:2px solid rgba(124,58,237,.5);border-left:2px solid rgba(124,58,237,.5);border-radius:0 0 0 32px;pointer-events:none"></div>
+    <div style="position:absolute;bottom:0;right:0;width:40px;height:40px;border-bottom:2px solid rgba(124,58,237,.5);border-right:2px solid rgba(124,58,237,.5);border-radius:0 0 32px 0;pointer-events:none"></div>
+    <div class="maint-badge"><i class="fa-solid fa-triangle-exclamation"></i> SISTEM MAINTENANCE</div>
+    <div class="maint-icon-ring">
+      <span class="maint-icon-inner">⚙️</span>
+    </div>
+    <div class="maint-title">MAINTENANCE</div>
+    <div class="maint-subtitle">◈ UPGRADE IN PROGRESS ◈</div>
+    <!-- Fun badges -->
+    <div class="maint-fun-row">
+      <span class="maint-fun-badge">☕ Lagi nge-kopi dulu</span>
+      <span class="maint-fun-badge">🤓 Dev lagi kerja keras</span>
+    </div>
+    <div class="maint-text" id="maintText"></div>
+    <!-- COUNTDOWN -->
+    <div class="maint-countdown-wrap">
+      <div class="maint-countdown-label">🕐 Selesai Dalam</div>
+      <div class="maint-countdown-timer">
+        <div class="maint-cd-unit">
+          <div class="maint-cd-num" id="cdHours">00</div>
+          <div class="maint-cd-label">JAM</div>
+        </div>
+        <div class="maint-cd-sep">:</div>
+        <div class="maint-cd-unit">
+          <div class="maint-cd-num" id="cdMins">00</div>
+          <div class="maint-cd-label">MENIT</div>
+        </div>
+        <div class="maint-cd-sep">:</div>
+        <div class="maint-cd-unit">
+          <div class="maint-cd-num" id="cdSecs">00</div>
+          <div class="maint-cd-label">DETIK</div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="input-area">
-    <div class="input-box">
-      <textarea
-        id="user-input"
-        rows="1"
-        placeholder="Ketik pesanmu di sini..."
-        onkeydown="handleKey(event)"
-        oninput="autoResize(this)"
-      ></textarea>
-      <button class="send-btn" id="send-btn" onclick="sendMessage()">
-        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-      </button>
+    <!-- SCHEDULE -->
+    <div class="maint-schedule" id="maintSchedule">
+      <div class="maint-schedule-row">
+        <span class="maint-schedule-key">📅 Mulai</span>
+        <span class="maint-schedule-val" id="maintStart">—</span>
+      </div>
+      <div class="maint-schedule-row">
+        <span class="maint-schedule-key">⏰ Selesai</span>
+        <span class="maint-schedule-val" id="maintEnd">—</span>
+      </div>
     </div>
-    <div class="input-footer">
-      Powered by <span>overchat.ai</span> &nbsp;·&nbsp; Model: <span>Claude Haiku 4.5</span>
+    <div class="maint-progress"><div class="maint-progress-bar" id="maintProgressBar" style="width:0%"></div></div>
+    <div class="maint-eta" id="maintEta">Menghitung...</div>
+    <div id="maintSocmedRow" style="display:none;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:2"></div>
+  </div>
+</div>
+
+<!-- ══ BETA OVERLAY ══ -->
+<div id="betaOverlay">
+  <div class="beta-box">
+    <button class="beta-close-btn" onclick="closeBetaOverlay()" title="Tutup">✕</button>
+    <div class="beta-icon">🧪</div>
+    <div class="beta-title">BETA TESTING</div>
+    <div class="beta-sub">◈ VERSI PERCOBAAN ◈</div>
+    <div class="beta-desc">
+      Website ini masih dalam tahap <strong>Beta Testing</strong> — fitur masih terus dikembangkan dan mungkin ada bug. Terima kasih sudah mencoba! 🙏
+    </div>
+    <div class="beta-badges">
+      <span class="beta-badge">⚡ Aktif Dikembangkan</span>
+      <span class="beta-badge">🐛 Bug Mungkin Ada</span>
+      <span class="beta-badge">🔥 Fitur Baru Segera</span>
+    </div>
+    <button class="beta-ok-btn" onclick="closeBetaOverlay()">Mengerti, Lanjut! 🚀</button>
+  </div>
+</div>
+
+<!-- ══ AD OVERLAY ══ -->
+<div id="adOverlay">
+  <div class="ad-box">
+    <div class="ad-badge">📣 PROMO &amp; INFO</div>
+    <button class="ad-close-btn" onclick="closeAdOverlay()" title="Tutup iklan">✕</button>
+    <div id="adContent"></div>
+    <div id="adNavRow" class="ad-nav-row"></div>
+    <div id="adDots" class="ad-dots-row"></div>
+  </div>
+</div>
+
+<!-- ══ REDEEM MODAL ══ -->
+<div id="redeemOverlay" onclick="if(event.target===this)closeRedeem()">
+  <div class="redeem-box">
+    <button class="redeem-close-btn" onclick="closeRedeem()">✕</button>
+    <div class="redeem-icon">🎁</div>
+    <div class="redeem-title">CODE REDEEM</div>
+    <div class="redeem-sub">Masukkan kode VIP untuk unlock file eksklusif!</div>
+    <div class="redeem-input-wrap">
+      <input class="redeem-input" id="redeemInput" placeholder="Masukkan kode di sini..." maxlength="32" onkeydown="if(event.key==='Enter')doRedeem()">
+      <button class="redeem-btn" onclick="doRedeem()">🔓 Redeem</button>
+    </div>
+    <div id="redeemMsg" class="redeem-msg"></div>
+    <div id="redeemFiles" class="redeem-files"></div>
+  </div>
+</div>
+
+<!-- ══ DRAWER OVERLAY ══ -->
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- ══ DRAWER ══ -->
+<div id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo-row">
+      <img class="drawer-logo-img" id="drawerLogoImg" src="" alt="HC">
+      <div>
+        <div class="drawer-logo-txt">HANAMORI CALYX</div>
+        <div style="font-size:.55rem;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px">AI v5.0</div>
+      </div>
+    </div>
+    <div class="drawer-clock"><i class="fa-regular fa-clock" style="font-size:.75rem"></i><span id="drawerTime">00:00</span></div>
+    <div class="drawer-clock-date" id="drawerDate">--</div>
+  </div>
+  <div class="drawer-menu">
+    <div class="drawer-section-label">Navigasi</div>
+    <div class="drawer-item active-page" id="dmHome" onclick="drawerNav('home','dmHome')"><i class="fa-solid fa-house"></i>Home — AI Chat</div>
+    <div class="drawer-item" id="dmUpdate" onclick="drawerNav('update','dmUpdate')"><i class="fa-solid fa-bell"></i>New Update</div>
+    <div class="drawer-item" id="dmSave" onclick="drawerNav('save','dmSave')"><i class="fa-solid fa-floppy-disk"></i>Save Script</div>
+    <div class="drawer-item" id="dmInfo" onclick="drawerNav('info','dmInfo')"><i class="fa-solid fa-circle-info"></i>Info &amp; Developer</div>
+    <div class="drawer-sep"></div>
+    <div class="drawer-section-label">Tools</div>
+    <div class="drawer-item" onclick="copyCode();closeDrawer()"><i class="fa-solid fa-clipboard"></i>Salin Code Aktif</div>
+    <div class="drawer-item" onclick="saveScript();closeDrawer()"><i class="fa-solid fa-download"></i>Simpan Script</div>
+    <div class="drawer-item" onclick="if(currentLang==='html'){openPreview();}closeDrawer()"><i class="fa-solid fa-globe"></i>Preview Website</div>
+    <div class="drawer-sep"></div>
+    <div class="drawer-section-label">Lainnya</div>
+    <div class="drawer-item" onclick="clearChat();closeDrawer()"><i class="fa-solid fa-trash"></i>Hapus Riwayat Chat</div>
+    <div style="height:1px;background:var(--border);margin:8px 0"></div>
+    <div class="chat-new-btn" onclick="newChat();closeDrawer()"><i class="fa-solid fa-plus"></i><span>Chat Baru</span></div>
+    <div class="chat-history-label">Riwayat Chat</div>
+    <div id="chatHistoryList"></div>
+  </div>
+  <div class="drawer-footer">
+    <div class="drawer-status"><div class="drawer-status-dot"></div><span id="drawerStatus">AI Online &amp; Siap</span></div>
+  </div>
+</div>
+
+<!-- ══ PREVIEW MODAL ══ -->
+<div id="previewBackdrop" onclick="handleBackdropClick(event)">
+  <div id="previewModal">
+    <div class="preview-modal-bar">
+      <div class="preview-modal-drag">
+        <div class="preview-modal-dot red" onclick="closePreview()"></div>
+        <div class="preview-modal-dot yellow" onclick="refreshPreviewModal()"></div>
+        <div class="preview-modal-dot green" onclick="toggleFullPreview()"></div>
+      </div>
+      <div class="preview-modal-title">🌐 <span id="previewModalUrl">preview</span></div>
+      <span style="margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);flex-shrink:0" id="previewInfo">—</span>
+      <button class="preview-expand-btn" onclick="toggleFullPreview()" style="margin-left:6px">⛶ Full</button>
+      <button class="preview-close-btn" onclick="closePreview()">✕ KELUAR</button>
+    </div>
+    <div class="preview-frame-container"><iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms" title="Preview"></iframe></div>
+    <div class="preview-toolbar-bottom">
+      <button class="toolbar-btn" onclick="copyCode()" style="color:var(--accent);font-size:.62rem;padding:5px 10px">📋 Salin</button>
+      <button class="toolbar-btn" onclick="saveScript()" style="color:var(--success);font-size:.62rem;padding:5px 10px">💾 Simpan</button>
+      <button class="toolbar-btn" onclick="openPreviewNewTab()" style="font-size:.62rem;padding:5px 10px">↗ Tab Baru</button>
     </div>
   </div>
 </div>
 
-<script>
-  const API = "https://api.overchat.ai/v1/chat/completions";
-  const STORAGE_KEY = "overchat_session";
+<div class="app">
+  <header>
+    <div class="logo-wrap">
+      <div class="logo-icon" id="headerLogo">
+        <span id="headerLogoEmoji">🎮</span>
+        <img id="headerLogoImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px;">
+      </div>
+      <div>
+        <div class="logo-text">HANAMORI CALYX AI</div>
+        <div class="logo-sub">v5.0 Roblox Expert • Anti-Jailbreak • Smart</div>
+      </div>
+    </div>
+    <div class="header-clock">
+      <div class="clock-time" id="headerTime">00:00</div>
+      <div class="clock-date" id="headerDate">--</div>
+    </div>
+    <div class="header-badge">● AI ONLINE</div>
+  </header>
 
-  let session = loadSession();
-  let isLoading = false;
+  <div class="pages">
 
-  function loadSession() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return {
-      chatId: crypto.randomUUID(),
-      deviceId: crypto.randomUUID(),
-      messages: [],
-    };
-  }
-
-  function saveSession() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    } catch {}
-  }
-
-  function clearChat() {
-    session = {
-      chatId: crypto.randomUUID(),
-      deviceId: crypto.randomUUID(),
-      messages: [],
-    };
-    saveSession();
-    const chat = document.getElementById("chat");
-    chat.innerHTML = `
-      <div class="welcome" id="welcome">
-        <div class="welcome-icon">✦</div>
-        <h2>Halo! Ada yang bisa dibantu?</h2>
-        <p>Tanya apa saja — aku siap membantu kamu sekarang.</p>
-        <div class="suggestions">
-          <button class="suggestion-btn" onclick="fillSuggestion('Ceritakan tentang dirimu')">Ceritakan tentang dirimu</button>
-          <button class="suggestion-btn" onclick="fillSuggestion('Buatkan puisi tentang hujan')">Buatkan puisi tentang hujan</button>
-          <button class="suggestion-btn" onclick="fillSuggestion('Apa itu kecerdasan buatan?')">Apa itu AI?</button>
-          <button class="suggestion-btn" onclick="fillSuggestion('Bantu aku debugging kode JavaScript')">Bantu debugging JS</button>
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="home-grid">
+        <!-- Chat Panel -->
+        <div class="left-panel">
+          <div class="panel-header">
+            <div class="panel-icon blue">💬</div>
+            <span class="panel-title">AI Chat</span>
+            <button id="floatPrevBtn" onclick="openPreview()" style="display:none;padding:4px 10px;border-radius:7px;font-size:.6rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.08);color:#10b981;cursor:pointer;flex-shrink:0" title="Preview HTML">🌐 Preview</button>
+            <button id="redeemHeaderBtn" onclick="openRedeem()" title="Code Redeem" style="display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:7px;font-size:.6rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(124,58,237,.5);background:rgba(124,58,237,.08);color:#a78bfa;cursor:pointer;flex-shrink:0;transition:all .2s">🎁 <span>Redeem</span></button>
+            <div class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="message ai">
+              <div class="avatar ai">
+                <img id="aiAvatarWelcomeImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;">
+                <span id="aiAvatarEmoji">🤖</span>
+              </div>
+              <div class="bubble">
+                <div class="ai-name-badge">HANAMORI CALYX <span class="ai-verified-icon"><svg viewBox="0 0 12 10" xmlns="http://www.w3.org/2000/svg"><polyline points="1,5 4.5,8.5 11,1.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+                Halo! Aku <strong>HANAMORI CALYX AI v5.0</strong> 🚀<br><br>
+                Tanya apa aja — ngobrol, coding, website, <strong>script Roblox Studio</strong>, matematika, dll!<br><br>
+                <span style="color:var(--muted);font-size:.7rem">🎮 Mau script Fly, Chat Tag, Hotbar, Admin Panel, dll? Tinggal bilang aja bro!</span>
+                <span style="color:var(--muted);font-size:.7rem;display:block;margin-top:4px">📋 Ketuk tombol <strong>Salin</strong> di bawah pesan untuk menyalin teks!</span>
+                <span class="msg-time" id="welcomeTime"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-area">
+            <input type="file" id="inputImage" accept="image/*" style="display:none" onchange="handleFileSelect(event,'image')">
+            <input type="file" id="inputVideo" accept="video/*" style="display:none" onchange="handleFileSelect(event,'video')">
+            <input type="file" id="inputFile" accept="*/*" style="display:none" onchange="handleFileSelect(event,'file')">
+            <div class="voice-indicator" id="voiceIndicator">
+              <div class="voice-bars"><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div></div>
+              <span>Sedang merekam... ketuk mic untuk berhenti</span>
+            </div>
+            <div class="attach-row">
+              <button class="attach-icon-btn" onclick="showComingSoonOverlay('Foto')"><i class="fa-solid fa-image" style="color:#00d4ff"></i> Foto</button>
+              <button class="attach-icon-btn" onclick="showComingSoonOverlay('Video')"><i class="fa-solid fa-video" style="color:#ff4d6d"></i> Video</button>
+              <button class="attach-icon-btn" onclick="showComingSoonOverlay('File')"><i class="fa-solid fa-file-arrow-up" style="color:#7c3aed"></i> File</button>
+              <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Kirim pesan suara"><i class="fa-solid fa-microphone"></i></button>
+            </div>
+            <div class="pending-attach-wrap" id="pendingAttachWrap">
+              <img id="pendingThumb" class="pending-attach-thumb" src="" alt="" style="display:none">
+              <div class="pending-attach-info"><div class="pending-attach-name" id="pendingName"></div><div class="pending-attach-size" id="pendingSize"></div></div>
+              <button class="pending-attach-remove" onclick="clearPendingAttach()">✕</button>
+            </div>
+            <div class="input-row">
+              <textarea class="prompt-input" id="promptInput" placeholder="Tanya apa aja, minta script Roblox, website, math..." rows="2" onkeydown="handleKey(event)"></textarea>
+              <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+            </div>
+          </div>
         </div>
-      </div>`;
-  }
 
-  function fillSuggestion(text) {
-    const input = document.getElementById("user-input");
-    input.value = text;
-    autoResize(input);
-    input.focus();
-  }
-
-  function autoResize(el) {
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 120) + "px";
-  }
-
-  function handleKey(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  }
-
-  function hideWelcome() {
-    const w = document.getElementById("welcome");
-    if (w) w.remove();
-  }
-
-  function appendMessage(role, content) {
-    hideWelcome();
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
-    div.className = `msg ${role}`;
-
-    const isAI = role === "ai";
-    div.innerHTML = `
-      <div class="avatar ${isAI ? "ai-av" : "user-av"}">${isAI ? "✦" : "U"}</div>
-      <div class="bubble">${escapeHtml(content)}</div>
-    `;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-    return div.querySelector(".bubble");
-  }
-
-  function appendTyping() {
-    hideWelcome();
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
-    div.className = "msg ai";
-    div.id = "typing-msg";
-    div.innerHTML = `
-      <div class="avatar ai-av">✦</div>
-      <div class="bubble">
-        <div class="typing-indicator">
-          <span></span><span></span><span></span>
+        <!-- Hidden elements for code state (no longer shown as panel) -->
+        <div style="display:none">
+          <span id="filename"></span>
+          <span id="langLabel"></span>
+          <span id="lineCount"></span>
+          <span id="charCount"></span>
+          <div id="scriptTabsWrap"><div id="scriptTabs"></div></div>
+          <div id="codeWrapper"></div>
+          <div id="fileBtnBar"></div>
+          <button id="copyBtn"></button>
+          <button id="saveBtn"></button>
+          <button id="dlBtn"></button>
+          <button id="prevBtn"></button>
         </div>
       </div>
-    `;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-    return div;
-  }
+    </div>
 
-  function escapeHtml(str) {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
+    <!-- UPDATE -->
+    <div class="page" id="page-update">
+      <div class="page-title"><i class="fa-solid fa-bell" style="color:var(--accent)"></i>New Update</div>
+      <div id="updateList"></div>
+    </div>
 
-  function showError(msg) {
-    const existing = document.querySelector(".error-toast");
-    if (existing) existing.remove();
-    const el = document.createElement("div");
-    el.className = "error-toast";
-    el.textContent = "⚠ " + msg;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 4000);
-  }
+    <!-- SAVE -->
+    <div class="page" id="page-save">
+      <div class="save-header">
+        <div class="page-title" style="border:none;padding:0"><i class="fa-solid fa-floppy-disk" style="color:var(--accent)"></i>Save Script</div>
+        <div class="save-count" id="saveCount">0 script</div>
+      </div>
+      <div id="saveList"></div>
+    </div>
 
-  async function sendMessage() {
-    if (isLoading) return;
-    const input = document.getElementById("user-input");
-    const text = input.value.trim();
-    if (!text) return;
+    <!-- INFO -->
+    <div class="page" id="page-info">
+      <div class="info-bg-overlay"></div>
+      <div class="info-hero">
+        <!-- Avatar dengan centang biru REAL -->
+        <div class="info-avatar-wrap">
+          <div class="info-avatar"><img id="infoAvatarImg" src="" alt="Dev" style="width:100%;height:100%;object-fit:cover;"></div>
+          <!-- Centang biru real seperti Twitter/Instagram verified -->
+          <div class="verified-badge" title="Akun Terverifikasi">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91-1.01-1.01-2.52-1.27-3.91-.81C14.67 2.88 13.43 2 12 2s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81-1.01 1.01-1.27 2.52-.81 3.91C2.88 9.33 2 10.57 2 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91 1.01 1.01 2.52 1.27 3.91.81C9.33 21.12 10.57 22 12 22s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81 1.01-1.01 1.27-2.52.81-3.91C21.12 14.67 22 13.43 22 12h.25zm-4.07 2.61l-5.34 5.28-2.87-2.87a.75.75 0 1 0-1.06 1.06l3.4 3.4a.75.75 0 0 0 1.06 0l5.87-5.81a.75.75 0 1 0-1.06-1.06z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="info-dev-name" id="devName">Rahman X Cika
+          <!-- Centang biru inline juga -->
+          <svg viewBox="0 0 24 24" width="18" height="18" style="flex-shrink:0;fill:#1d9bf0;filter:drop-shadow(0 0 4px rgba(29,155,240,.5))" title="Terverifikasi">
+            <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91-1.01-1.01-2.52-1.27-3.91-.81C14.67 2.88 13.43 2 12 2s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81-1.01 1.01-1.27 2.52-.81 3.91C2.88 9.33 2 10.57 2 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91 1.01 1.01 2.52 1.27 3.91.81C9.33 21.12 10.57 22 12 22s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81 1.01-1.01 1.27-2.52.81-3.91C21.12 14.67 22 13.43 22 12h.25zm-4.07 2.61l-5.34 5.28-2.87-2.87a.75.75 0 1 0-1.06 1.06l3.4 3.4a.75.75 0 0 0 1.06 0l5.87-5.81a.75.75 0 1 0-1.06-1.06z"/>
+          </svg>
+        </div>
+        <div class="info-dev-role" id="devRole">Lead Developer &amp; UI/UX Designer</div>
+        <div class="info-status"><div class="info-status-dot"></div><span id="appVersion">Sistem Online (v5.0.0)</span></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title"><i class="fa-solid fa-circle-info"></i> Informasi Project</div>
+        <div class="info-row-desc"><strong>HANAMORI CALYX AI v5.0</strong> — AI expert Roblox Studio serba bisa: Chat Tag, Fly GUI, Hotbar, Admin Panel, Freecam, Music Player, Sprint, Overhead, dan semua script GUI. Coding lengkap, ngobrol, website, matematika, voice input, multi-script, anti-jailbreak ultra. By HANAMORI CALYX AI.</div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title"><i class="fa-solid fa-code"></i> Spesifikasi Teknis</div>
+        <div class="info-row"><span class="info-row-label">Model AI</span><span class="info-row-value">Llama 4 Scout (OpenRouter)</span></div>
+        <div class="info-row"><span class="info-row-label">Max Tokens</span><span class="info-row-value">8192 tokens</span></div>
+        <div class="info-row"><span class="info-row-label">Voice Input</span><span class="info-row-value">Web Speech API</span></div>
+        <div class="info-row"><span class="info-row-label">Multi Script</span><span class="info-row-value">✅ Tab Support</span></div>
+        <div class="info-row"><span class="info-row-label">Roblox Expert</span><span class="info-row-value">✅ GUI + LocalScript</span></div>
+        <div class="info-row"><span class="info-row-label">Versi</span><span class="info-row-value" id="versionVal">v5.0.0</span></div>
+      </div>
+      <div class="connect-section">
+        <div class="connect-title"><i class="fa-solid fa-users"></i> Connect With Me</div>
+        <div class="social-grid">
+          <a class="social-btn wa" id="linkWA" href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
+          <a class="social-btn ig" id="linkIG" href="#" target="_blank"><i class="fa-brands fa-instagram"></i>Instagram</a>
+          <a class="social-btn tt" id="linkTT" href="#" target="_blank"><i class="fa-brands fa-tiktok"></i>TikTok</a>
+          <a class="social-btn dc" id="linkDC" href="#" target="_blank"><i class="fa-brands fa-discord"></i>Discord</a>
+        </div>
+      </div>
+      <div class="info-footer">DEVELOPER : &copy; <span id="infoYear"></span> RAHMAN X CIKA OFC 18 &nbsp;|&nbsp; By HANAMORI CALYX AI</div>
+    </div>
 
-    input.value = "";
-    autoResize(input);
+  </div>
 
-    const btn = document.getElementById("send-btn");
-    btn.disabled = true;
-    isLoading = true;
+  <nav class="bottom-nav">
+    <div class="nav-item active" id="navHome" onclick="navTo('home',this)"><i class="fa-solid fa-house"></i>Home</div>
+    <div class="nav-item" id="navUpdate" onclick="navTo('update',this)">
+      <i class="fa-solid fa-bell"></i>
+      <span class="nav-badge" id="updateBadge"></span>
+      Update
+    </div>
+    <div class="nav-item" id="navSave" onclick="navTo('save',this)"><i class="fa-solid fa-floppy-disk"></i>Save</div>
+    <div class="nav-item" id="navInfo" onclick="navTo('info',this)"><i class="fa-solid fa-circle-info"></i>Info</div>
+  </nav>
+</div>
 
-    // Show user message
-    appendMessage("user", text);
-
-    // Show typing indicator
-    const typingEl = appendTyping();
-
-    const userMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: text,
-    };
-
-    const systemMessage = {
-      id: crypto.randomUUID(),
-      role: "system",
-      content: "Ikuti bahasa user dan jawab dengan gaya natural, singkat, dan jelas.",
-    };
-
-    const body = {
-      chatId: session.chatId,
-      model: "claude-haiku-4-5-20251001",
-      messages: [...session.messages, userMessage, systemMessage],
-      personaId: "claude-haiku-4-5-landing",
-      frequency_penalty: 0,
-      max_tokens: 4000,
-      presence_penalty: 0,
-      stream: true,
-      temperature: 0.5,
-      top_p: 0.95,
-    };
-
-    const headers = {
-      "sec-ch-ua-platform": `"Android"`,
-      "x-device-uuid": session.deviceId,
-      "sec-ch-ua": `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
-      "sec-ch-ua-mobile": "?1",
-      "x-device-language": "id-ID",
-      "x-device-platform": "web",
-      "x-device-version": "1.0.44",
-      "user-agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
-      "accept": "*/*",
-      "content-type": "application/json",
-      "origin": "https://overchat.ai",
-      "referer": "https://overchat.ai/",
-      "accept-language": "id-ID,id;q=0.9",
-    };
-
-    try {
-      const response = await fetch(API, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      // Remove typing indicator
-      typingEl.remove();
-
-      // Create AI bubble for streaming
-      const bubble = appendMessage("ai", "");
-      let answer = "";
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const rawLine of lines) {
-          const line = rawLine.trim();
-          if (!line.startsWith("data:")) continue;
-          const data = line.slice(5).trim();
-          if (!data || data === "[DONE]") continue;
-
-          try {
-            const json = JSON.parse(data);
-            const content = json.choices?.[0]?.delta?.content;
-            if (typeof content === "string") {
-              answer += content;
-              bubble.textContent = answer;
-              document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
-            }
-          } catch {}
-        }
-      }
-
-      // Save to session
-      const assistantMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: answer,
-      };
-      session.messages.push(userMessage);
-      session.messages.push(assistantMessage);
-      saveSession();
-
-    } catch (err) {
-      typingEl.remove();
-      showError("Gagal menghubungi server. Coba lagi.");
-      console.error(err);
-    }
-
-    btn.disabled = false;
-    isLoading = false;
-    input.focus();
-  }
-</script>
+<script src="iklan.js"></script>
+<script src="redemcode.js"></script>
+<script src="backpackredem.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
