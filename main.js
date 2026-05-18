@@ -1780,55 +1780,31 @@ async function sendMessage() {
   try {
     let reply = '';
 
-    /* ══ OVERCHAT API ══ */
+    /* ══ PROXY API — lewat /api/chat Vercel ══ */
     const allMessages = [
-      { id: crypto.randomUUID(), role: 'system', content: SYSTEM },
+      { role: 'system', content: SYSTEM },
       ...chatHistory.map(m => ({
-        id: crypto.randomUUID(),
         role: m.role,
         content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
       }))
     ];
 
-    const overchatBody = {
-      chatId: _overchatSession.chatId,
-      model: 'claude-haiku-4-5-20251001',
+    const proxyBody = {
       messages: allMessages,
-      personaId: 'claude-haiku-4-5-landing',
-      frequency_penalty: 0,
-      max_tokens: 4000,
-      presence_penalty: 0,
-      stream: true,
-      temperature: 0.5,
-      top_p: 0.95,
+      chatId: _overchatSession.chatId,
+      deviceId: _overchatSession.deviceId,
     };
 
-    const overchatHeaders = {
-      'sec-ch-ua-platform': '"Android"',
-      'x-device-uuid': _overchatSession.deviceId,
-      'sec-ch-ua': '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
-      'sec-ch-ua-mobile': '?1',
-      'x-device-language': 'id-ID',
-      'x-device-platform': 'web',
-      'x-device-version': '1.0.44',
-      'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36',
-      'accept': '*/*',
-      'content-type': 'application/json',
-      'origin': 'https://overchat.ai',
-      'referer': 'https://overchat.ai/',
-      'accept-language': 'id-ID,id;q=0.9',
-      'priority': 'u=1, i',
-    };
-
-    const res = await fetch('https://api.overchat.ai/v1/chat/completions', {
+    const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: overchatHeaders,
-      body: JSON.stringify(overchatBody),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(proxyBody),
     });
 
     if (!res.ok) {
       removeTyping();
-      addMsg('ai', `❌ Error: HTTP ${res.status}`);
+      const errData = await res.json().catch(() => ({}));
+      addMsg('ai', `❌ Error: ${errData?.error?.message || 'HTTP ' + res.status}`);
       chatHistory.pop();
       isLoading = false;
       document.getElementById('sendBtn').disabled = false;
@@ -1836,40 +1812,13 @@ async function sendMessage() {
       return;
     }
 
-    // Baca SSE stream
+    // Baca response JSON dari proxy (bukan stream langsung)
     removeTyping();
     addMsg('ai', '');
     const streamEl = document.querySelector('#chatMessages .message.ai:last-child .bubble');
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (const rawLine of lines) {
-        const line = rawLine.trim();
-        if (!line.startsWith('data:')) continue;
-        const data = line.slice(5).trim();
-        if (!data || data === '[DONE]') continue;
-        try {
-          const json = JSON.parse(data);
-          const chunk = json.choices?.[0]?.delta?.content;
-          if (typeof chunk === 'string') {
-            reply += chunk;
-            if (streamEl) {
-              streamEl.innerHTML = `<div class="ai-name-badge">HANAMORI CALYX ${VERIFIED_BADGE_SVG}</div>` + renderMarkdown(reply);
-            }
-            const cm = document.getElementById('chatMessages');
-            cm.scrollTop = cm.scrollHeight;
-          }
-        } catch {}
-      }
-    }
+    const data = await res.json();
+    reply = data?.choices?.[0]?.message?.content || '';
 
     chatHistory.push({ role: 'assistant', content: reply });
     /* ══ DETECT MULTI-SCRIPT ══ */
