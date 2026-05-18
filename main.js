@@ -1780,29 +1780,55 @@ async function sendMessage() {
   try {
     let reply = '';
 
-    // Kirim lewat /api/chat (Vercel proxy) — bukan langsung ke overchat.ai
-    const apiRes = await fetch('/api/chat', {
+    /* ══ OVERCHAT API ══ */
+    const allMessages = [
+      { id: crypto.randomUUID(), role: 'system', content: SYSTEM },
+      ...chatHistory.map(m => ({
+        id: crypto.randomUUID(),
+        role: m.role,
+        content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
+      }))
+    ];
+
+    const overchatBody = {
+      chatId: _overchatSession.chatId,
+      model: 'claude-haiku-4-5-20251001',
+      messages: allMessages,
+      personaId: 'claude-haiku-4-5-landing',
+      frequency_penalty: 0,
+      max_tokens: 4000,
+      presence_penalty: 0,
+      stream: true,
+      temperature: 0.5,
+      top_p: 0.95,
+    };
+
+    const overchatHeaders = {
+      'sec-ch-ua-platform': '"Android"',
+      'x-device-uuid': _overchatSession.deviceId,
+      'sec-ch-ua': '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+      'sec-ch-ua-mobile': '?1',
+      'x-device-language': 'id-ID',
+      'x-device-platform': 'web',
+      'x-device-version': '1.0.44',
+      'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36',
+      'accept': '*/*',
+      'content-type': 'application/json',
+      'origin': 'https://overchat.ai',
+      'referer': 'https://overchat.ai/',
+      'accept-language': 'id-ID,id;q=0.9',
+      'priority': 'u=1, i',
+    };
+
+    const res = await fetch('https://api.overchat.ai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [
-          { role: 'system', content: SYSTEM },
-          ...chatHistory.map(m => ({
-            role: m.role,
-            content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
-          }))
-        ],
-        temperature: 0.5,
-        max_tokens: 4000,
-      }),
+      headers: overchatHeaders,
+      body: JSON.stringify(overchatBody),
     });
 
-    const data = await apiRes.json();
-    removeTyping();
-
-    if (!apiRes.ok) {
-      const errMsg = data?.error?.message || 'Gagal terhubung ke server.';
-      addMsg('ai', `❌ Error: ${esc(errMsg)}`);
+    if (!res.ok) {
+      removeTyping();
+      addMsg('ai', `❌ Error: HTTP ${res.status}`);
       chatHistory.pop();
       isLoading = false;
       document.getElementById('sendBtn').disabled = false;
@@ -1810,9 +1836,42 @@ async function sendMessage() {
       return;
     }
 
-    reply = data.choices?.[0]?.message?.content || '_(Tidak ada respons)_';
-    chatHistory.push({ role: 'assistant', content: reply });
+    // Baca SSE stream
+    removeTyping();
+    addMsg('ai', '');
+    const streamEl = document.querySelector('#chatMessages .message.ai:last-child .bubble');
 
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim();
+        if (!data || data === '[DONE]') continue;
+        try {
+          const json = JSON.parse(data);
+          const chunk = json.choices?.[0]?.delta?.content;
+          if (typeof chunk === 'string') {
+            reply += chunk;
+            if (streamEl) {
+              streamEl.innerHTML = `<div class="ai-name-badge">HANAMORI CALYX ${VERIFIED_BADGE_SVG}</div>` + renderMarkdown(reply);
+            }
+            const cm = document.getElementById('chatMessages');
+            cm.scrollTop = cm.scrollHeight;
+          }
+        } catch {}
+      }
+    }
+
+    chatHistory.push({ role: 'assistant', content: reply });
     /* ══ DETECT MULTI-SCRIPT ══ */
     const multiPattern = /\[SCRIPT\s*\d+:\s*([^\]]+)\]\s*```(\w+)\n?([\s\S]*?)```/gi;
     const multiMatches = [...reply.matchAll(multiPattern)];
@@ -1889,8 +1948,6 @@ async function sendMessage() {
       };
       streamEl.appendChild(copyBtn2);
     }
-    saveCurrentChat(prompt.slice(0, 40));
-    addMsg('ai', renderMarkdown(reply));
     saveCurrentChat(prompt.slice(0, 40));
   } catch(err) {
     removeTyping();
@@ -2062,3 +2119,4 @@ function hlGeneric(code) {
     return h;
   }).join('\n');
 }
+  
