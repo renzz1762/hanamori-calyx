@@ -36,6 +36,16 @@ const IKLAN_CFG = {
    * Tambah iklan baru: copy salah satu blok, paste di bawahnya, ganti isinya!
    ──────────────────────────────────────────────────────────── */
   ADS_LIST: [
+     {
+      type: "text",
+      title: "🔥 Follow Instagram Gue!",
+      text: "Konten script Roblox, tips coding, dan info update HANAMORI CALYX AI setiap hari. Jangan ketinggalan bro!",
+      media_url: "https://www.instagram.com/_renzzzhc.exe?igsh=MWc5NmpwY2xtYzlpcw==",
+      cta_buttons: [
+        { type: "tt", url: "https://tiktok.com/@renzzzzofc18", label: "Follow TikTok" },
+        { type: "wa", url: "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A", label: "Join WA Channel" },
+      ]
+    },
     {
       type: "text",
       title: "🔥 Follow TikTok Gue!",
