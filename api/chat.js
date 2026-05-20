@@ -1,6 +1,6 @@
 const crypto = require("node:crypto");
 
-const API = "https://unlimitedai/.chat/api/chat";
+const API = "https://app.unlimitedai.chat/api/chat";
 
 function parseSetCookie(headers) {
   const result = {};
