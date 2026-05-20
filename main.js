@@ -15,7 +15,7 @@ const CFG = {
   BG_UPDATE: "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
   BG_SAVE:   "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
   LINK_WA:      "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A",
-  LINK_IG:      "https://linktr.ee/renzzzz1572",
+  LINK_IG:      "https://www.instagram.com/_renzzzhc.exe?igsh=MWc5NmpwY2xtYzlpcw==",
   LINK_TIKTOK:  "https://tiktok.com/@renzzzzofc18",
   LINK_DISCORD: "https://discord.gg/PFVEfKRak",
 
