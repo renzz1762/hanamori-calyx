@@ -42,7 +42,7 @@ const IKLAN_CFG = {
       text: "Konten script Roblox, tips coding, dan info update HANAMORI CALYX AI setiap hari. Jangan ketinggalan bro!",
       media_url: "https://www.instagram.com/_renzzzhc.exe?igsh=MWc5NmpwY2xtYzlpcw==",
       cta_buttons: [
-        { type: "tt", url: "https://tiktok.com/@renzzzzofc18", label: "Follow TikTok" },
+        { type: "ig", url: "https://www.instagram.com/_renzzzhc.exe?igsh=MWc5NmpwY2xtYzlpcw==", label: "Follow Instagramk" },
         { type: "wa", url: "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A", label: "Join WA Channel" },
       ]
     },
