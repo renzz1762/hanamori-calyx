@@ -39,10 +39,10 @@ const REDEEM_CODES = {
   },
 
   /* ══ VIP CODES ═══════════════════════════════════════════ */
-  "HCVIP2026": {
+  "HC4372026": {
     active : true,
-    type   : "vip",
-    desc   : "VIP Pack 2026 — Akses script premium pilihan.",
+    type   : "free",
+    desc   : "SCRIPT HC GRAFICK VERSI SIMPLE",
     expires: null,
   },
 
