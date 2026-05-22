@@ -31,40 +31,103 @@ const BACKPACK = {
   /* ══════════════════════════════════════════
      HCVIP2026 — VIP PACK 2026
   ══════════════════════════════════════════ */
-  "HCVIP2026": {
-    label: "🔑 VIP PACK 2026",
+  "HC4372026": {
+    label: "SCRIPT HD GRAFICK",
     files: [
       {
-        name: "Script Fly GUI VIP",
-        filename: "fly_gui_vip.lua",
-        desc: "Script Fly Roblox versi VIP dengan speed control, mobile support, dan UI premium.",
-        content: `-- ╔══════════════════════════════════════════╗
--- ║  FLY GUI VIP  |  BY HANAMORI CALYX AI   ║
--- ║  renzzzzofc18 | VIP v1.0                 ║
--- ╚══════════════════════════════════════════╝
+        name: "Script HD GRAFICK",
+        filename: "hd_grafick.lua",
+        desc: "SCRIPT HD GRAFICK VERSI SIMPLE",
+        content: `--INSTRUCTIONS:
+--MOVE THIS SCRIPT INTO ServerScriptService!
+--THAT'S ALL!
+--THANKS FOR USING MY SCRIPT! (:
 
--- >> Ini adalah preview script VIP. Kode penuh tersedia setelah konfirmasi Discord. <<
--- Join Discord: https://discord.gg/PFVEfKRak
--- Follow TikTok: https://tiktok.com/@renzzzzofc18
+local Lighting = game:GetService("Lighting")
+local StarterGui = game:GetService("StarterGui")
 
-print("FLY GUI VIP by HANAMORI CALYX AI loaded!")`
+-- Hapus efek lama tapi JANGAN hapus Sky
+for i, v in pairs(Lighting:GetChildren()) do
+    if v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") 
+        or v:IsA("SunRaysEffect") or v:IsA("Atmosphere") or v:IsA("DepthOfFieldEffect") then
+        v:Destroy()
+    end
+    -- Sky tidak dihapus!
+end
+
+-- Buat efek baru
+local Bloom = Instance.new("BloomEffect")
+local Blur = Instance.new("BlurEffect")
+local ColorCor = Instance.new("ColorCorrectionEffect")
+local SunRays = Instance.new("SunRaysEffect")
+local Atm = Instance.new("Atmosphere")
+local DepthOfField = Instance.new("DepthOfFieldEffect")
+
+Bloom.Parent = Lighting
+Blur.Parent = Lighting
+ColorCor.Parent = Lighting
+SunRays.Parent = Lighting
+Atm.Parent = Lighting
+DepthOfField.Parent = Lighting
+
+-- HD Bloom Settings (dikurangi agar tidak silau)
+Bloom.Intensity = 0.2
+Bloom.Size = 16
+Bloom.Threshold = 1
+
+-- HD Blur (subtle for realism)
+Blur.Size = 1.5
+
+-- HD Color Correction
+ColorCor.Brightness = 0
+ColorCor.Contrast = 0.2
+ColorCor.Saturation = 0.1
+ColorCor.TintColor = Color3.fromRGB(255, 255, 255)
+
+-- HD Sun Rays (dikurangi agar tidak silau)
+SunRays.Intensity = 0.05
+SunRays.Spread = 0.1
+
+-- HD Lighting Settings
+Lighting.Ambient = Color3.fromRGB(135, 135, 135)
+Lighting.Brightness = 2
+Lighting.ColorShift_Bottom = Color3.fromRGB(0, 0, 0)
+Lighting.ColorShift_Top = Color3.fromRGB(240, 240, 240)
+Lighting.EnvironmentDiffuseScale = 0.4
+Lighting.EnvironmentSpecularScale = 0.4
+Lighting.GlobalShadows = true
+Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+Lighting.ShadowSoftness = 0.15
+Lighting.ClockTime = 14
+Lighting.GeographicLatitude = 41.73
+Lighting.ExposureCompensation = 0
+ 
+-- HD Atmosphere (dikurangi Glare)
+Atm.Density = 0.3
+Atm.Offset = 0.25
+Atm.Color = Color3.fromRGB(199, 199, 210)
+Atm.Decay = Color3.fromRGB(106, 112, 125)
+Atm.Glare = 0
+Atm.Haze = 1.5
+ 
+-- Depth of Field for HD realism
+DepthOfField.FarIntensity = 0.1
+DepthOfField.FocusDistance = 0.05
+DepthOfField.InFocusRadius = 50
+DepthOfField.NearIntensity = 0.75
+
+--delete the script after the lighting is done!
+script:Destroy()
+`
       },
       {
-        name: "Info VIP Member",
-        filename: "info_vip.txt",
-        desc: "Informasi lengkap akses member VIP HANAMORI CALYX AI.",
-        content: `╔══════════════════════════════════╗
-║    HANAMORI CALYX AI — VIP       ║
-╚══════════════════════════════════╝
-
-Selamat! Kamu berhasil redeem kode VIP.
-
-AKSES VIP MELIPUTI:
-✅ Script Fly GUI Premium
-✅ Script Chat GUI V3 Full
-✅ Script Admin Panel Lengkap
-✅ Update script seumur hidup
-✅ Priority support di Discord
+        name: "CARA PASANG SCRIPT",
+        filename: "CARA PASANB",
+        desc: "INI ADALAH BERUBA INFORMASI PEMASANGAN SCRIPT",
+        content: `
+CARA PASANG SCRIPT HD GRAFICK :
+1 CARI ServerScriptService TRUS BIKIN Script/Naskah
+2 TRUS TEMPEL SCRIPT YANG AKU KASIH TADI
 
 CARA DAPAT SCRIPT LENGKAP:
 → Join Discord: https://discord.gg/PFVEfKRak
