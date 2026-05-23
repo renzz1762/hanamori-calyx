@@ -15,7 +15,7 @@ const CFG = {
   BG_UPDATE: "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
   BG_SAVE:   "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
   LINK_WA:      "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A",
-  LINK_IG:      "https://www.instagram.com/_renzzzhc.exe?igsh=MWc5NmpwY2xtYzlpcw==",
+  LINK_IG:      "https://www.instagram.com/47xcikal_?igsh=MWc5NmpwY2xtYzlpcw==",
   LINK_TIKTOK:  "https://tiktok.com/@renzzzzofc18",
   LINK_DISCORD: "https://discord.gg/PFVEfKRak",
 
@@ -23,7 +23,7 @@ const CFG = {
   // Kosongkan yang tidak mau tampil, isi yang mau muncul
   MAINT_SOCMED: {
     wa:      "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A",
-    ig:      "",
+    ig:      "https://www.instagram.com/47xcikal_?igsh=MWc5NmpwY2xtYzlpcw==",
     tiktok:  "https://tiktok.com/@renzzzzofc18",
     discord: "",
   },
@@ -37,7 +37,7 @@ const CFG = {
     text: "Download APK sekarang dan cobain semua fitur terbarunya bro!",
     links: [
       { type: "tiktok", url: "https://tiktok.com/@renzzzzofc18", label: "Follow TikTok" },
-      { type: "ig", url: "https://linktr.ee/renzzzz1572", label: "Follow Instagram" },
+      { type: "ig", url: "https://www.instagram.com/47xcikal_?igsh=MWc5NmpwY2xtYzlpcw==", label: "Follow Instagram" },
       { type: "discord", url: "https://discord.gg/PFVEfKRak", label: "Join Discord" },
       { type: "wa", url: "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A", label: "Saluran WA" },
     ]
