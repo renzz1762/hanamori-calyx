@@ -2,127 +2,66 @@ const crypto = require("node:crypto");
 
 // ================================================================
 //   HANAMORI CALYX AI — chat.js
-//   API  : Olabiba AI (https://www.olabiba.com)
-//   Model: built-in (no key needed)
+//   API  : Overchat (https://overchat.ai)
+//   Model: alibaba/qwen3-next-80b-a3b-instruct
 // ================================================================
 
-const BASE = "https://www.olabiba.com";
-const UA   = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
+const API      = "https://api.overchat.ai/v1/chat/completions";
+const MODEL    = "alibaba/qwen3-next-80b-a3b-instruct";
+const PERSONA  = "qwen-3-landing";
+const UA       = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
-// ── Cookie helpers ───────────────────────────────────────────────
-function nowUnix() { return Math.floor(Date.now() / 1000); }
-
-function buildInitialCookies() {
-  const t = nowUnix();
-  const consentUUID = crypto.randomUUID();
-  const FCCDCF = encodeURIComponent(JSON.stringify([
-    null, null, null, null, null, null,
-    [[[32, JSON.stringify([consentUUID, [t, 895000000]])]]],
-  ]));
+function makeHeaders(deviceId) {
   return {
-    olabiba_consent: `true%3A${t + 604800}`,
-    FCCDCF,
+    "sec-ch-ua-platform": `"Android"`,
+    "x-device-uuid":      deviceId,
+    "sec-ch-ua":          `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
+    "sec-ch-ua-mobile":   "?1",
+    "x-device-language":  "id-ID",
+    "x-device-platform":  "web",
+    "x-device-version":   "1.0.44",
+    "user-agent":         UA,
+    accept:               "*/*",
+    "content-type":       "application/json",
+    origin:               "https://overchat.ai",
+    referer:              "https://overchat.ai/",
+    "accept-language":    "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    priority:             "u=1, i",
   };
 }
 
-function cookieHeader(cookies) {
-  return Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join("; ");
-}
+async function callOverchat(messages) {
+  // Generate fresh chatId & deviceId tiap request — bypass quota per-session
+  const chatId   = crypto.randomUUID();
+  const deviceId = crypto.randomUUID();
 
-function saveSetCookie(cookies, headers) {
-  const list = typeof headers.getSetCookie === "function"
-    ? headers.getSetCookie()
-    : headers.get("set-cookie") ? [headers.get("set-cookie")] : [];
-  for (const raw of list) {
-    const first = raw.split(";")[0];
-    const idx = first.indexOf("=");
-    if (idx !== -1) cookies[first.slice(0, idx)] = first.slice(idx + 1);
+  const body = {
+    chatId,
+    model:             MODEL,
+    messages,
+    personaId:         PERSONA,
+    frequency_penalty: 0,
+    max_tokens:        4000,
+    presence_penalty:  0,
+    stream:            true,
+    temperature:       0.5,
+    top_p:             0.95,
+  };
+
+  const response = await fetch(API, {
+    method:  "POST",
+    headers: makeHeaders(deviceId),
+    body:    JSON.stringify(body),
+  });
+
+  console.log(`[Overchat] status=${response.status}`);
+
+  if (!response.ok) {
+    const err = await response.text().catch(() => "");
+    throw new Error(`Overchat ${response.status}: ${err.slice(0, 200)}`);
   }
-}
 
-// ── Generic request dengan cookie jar ───────────────────────────
-async function req(cookies, url, options = {}) {
-  const hdrs = { "user-agent": UA, "accept-language": "id-ID,id;q=0.9", ...options.headers };
-  const c = cookieHeader(cookies);
-  if (c) hdrs["cookie"] = c;
-  const r = await fetch(url, { ...options, headers: hdrs });
-  saveSetCookie(cookies, r.headers);
-  return r;
-}
-
-// ── Init session (ambil cookies dari homepage) ───────────────────
-async function initSession(cookies) {
-  await req(cookies, `${BASE}/`, {
-    method: "GET",
-    headers: { accept: "text/html,application/xhtml+xml,*/*;q=0.8" },
-  });
-}
-
-// ── Kirim pesan ke Olabiba ───────────────────────────────────────
-async function sendMessage(cookies, text) {
-  const form = new FormData();
-  form.set("text",    text);
-  form.set("mood",    "friendly");
-  form.set("lang",    "id");
-  form.set("adblock", "No");
-  form.set("theme",   "dark");
-  const r = await req(cookies, `${BASE}/php/message.php`, {
-    method: "POST",
-    body:   form,
-    headers: {
-      accept:           "*/*",
-      origin:           BASE,
-      referer:          `${BASE}/`,
-      "sec-fetch-site": "same-origin",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-dest": "empty",
-    },
-  });
-  await r.text().catch(() => "");
-  return r.status;
-}
-
-// ── Decode HTML entities ─────────────────────────────────────────
-function decodeHtml(t) {
-  return t.replaceAll("&nbsp;"," ").replaceAll("&amp;","&")
-          .replaceAll("&lt;","<").replaceAll("&gt;",">")
-          .replaceAll("&quot;",'"').replaceAll("&#039;","'").replaceAll("&#39;","'");
-}
-
-// ── Bersihkan jawaban dari tag/markup internal Olabiba ───────────
-function cleanAnswer(text) {
-  let o = text || "";
-  const qi = o.indexOf("<!--QUERY:");
-  if (qi !== -1) o = o.slice(0, qi);
-  const fi = o.search(/\[FOLLOWUP(?::[^\]]*)?\]/i);
-  if (fi !== -1) o = o.slice(0, fi);
-  return o
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/\[ELABORATE\]/gi, "")
-    .replace(/\[FOLLOWUP(?::[^\]]*)?\][\s\S]*?(?:\[\/FOLLOWUP\])?/gi, "")
-    .replace(/\[\/FOLLOWUP\]/gi, "")
-    .replace(/\\n/g, "\n")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-// ── Baca SSE stream jawaban ──────────────────────────────────────
-async function readStream(cookies) {
-  const r = await req(cookies, `${BASE}/php/stream.php`, {
-    method: "GET",
-    headers: {
-      accept:           "text/event-stream",
-      "cache-control":  "no-cache",
-      referer:          `${BASE}/`,
-      "sec-fetch-site": "same-origin",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-dest": "empty",
-    },
-  });
-
-  if (!r.body) return { status: r.status, answer: "" };
-
-  const reader  = r.body.getReader();
+  const reader  = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "", answer = "";
 
@@ -130,47 +69,23 @@ async function readStream(cookies) {
     const { value, done } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split(/\r?\n/);
+    const lines = buffer.split("\n");
     buffer = lines.pop() || "";
     for (const rawLine of lines) {
       const line = rawLine.trim();
       if (!line.startsWith("data:")) continue;
       const data = line.slice(5).trim();
       if (!data || data === "[DONE]") continue;
-      answer += decodeHtml(data);
+      try {
+        const json = JSON.parse(data);
+        const content = json.choices?.[0]?.delta?.content;
+        if (typeof content === "string") answer += content;
+      } catch (_) {}
     }
   }
 
-  return { status: r.status, answer: cleanAnswer(answer) };
-}
-
-// ── Fetch media & save (biar session valid) ──────────────────────
-async function postSide(cookies, question, answer) {
-  // fetch_media
-  await req(cookies, `${BASE}/php/fetch_media.php`, {
-    method: "POST",
-    headers: { accept:"*/*", origin:BASE, referer:`${BASE}/`, "content-length":"0", "sec-fetch-site":"same-origin","sec-fetch-mode":"cors","sec-fetch-dest":"empty" },
-  }).then(r => r.text().catch(()=>"")).catch(()=>{});
-
-  // save-response
-  const body = new URLSearchParams({ question, answer, html: answer });
-  await req(cookies, `${BASE}/php/save-response.php`, {
-    method: "POST", body,
-    headers: { accept:"*/*", origin:BASE, referer:`${BASE}/`, "content-type":"application/x-www-form-urlencoded","sec-fetch-site":"same-origin","sec-fetch-mode":"cors","sec-fetch-dest":"empty" },
-  }).then(r => r.text().catch(()=>"")).catch(()=>{});
-}
-
-// ── Build context prompt dari history ────────────────────────────
-function buildPrompt(systemContent, chatMsgs, userPrompt) {
-  const lines = [];
-  if (systemContent) lines.push(`[System]: ${systemContent}`);
-  // Ambil 6 pesan terakhir sebagai konteks
-  for (const m of chatMsgs.slice(-6)) {
-    if (m.role === "user")      lines.push(`User: ${m.content}`);
-    if (m.role === "assistant") lines.push(`Assistant: ${m.content}`);
-  }
-  lines.push(`User: ${userPrompt}`);
-  return lines.join("\n");
+  console.log(`[Overchat] answer len=${answer.length}`);
+  return answer;
 }
 
 // ================================================================
@@ -188,54 +103,28 @@ module.exports = async function handler(req, res) {
   try {
     const { messages = [] } = req.body;
 
-    const systemMsg  = messages.find((m) => m.role === "system");
-    const chatMsgs   = messages.filter((m) => m.role !== "system");
-    const lastUser   = [...chatMsgs].reverse().find((m) => m.role === "user");
-
-    const userPrompt = lastUser
-      ? (typeof lastUser.content === "string"
-          ? lastUser.content
-          : lastUser.content?.find?.((x) => x.type === "text")?.text ?? "")
-      : "";
-
-    if (!userPrompt)
-      return res.status(400).json({ error: { message: "No user message" } });
-
-    const sysContent = systemMsg
-      ? (typeof systemMsg.content === "string" ? systemMsg.content : JSON.stringify(systemMsg.content))
-      : "";
-
-    const prevMsgs = chatMsgs.slice(0, -1).map(m => ({
+    // Konversi messages ke format Overchat (tambahin id tiap message)
+    const overchatMessages = messages.map((m) => ({
+      id:      crypto.randomUUID(),
       role:    m.role,
-      content: typeof m.content === "string" ? m.content : (m.content?.find?.(x=>x.type==="text")?.text ?? ""),
+      content: typeof m.content === "string"
+        ? m.content
+        : (m.content?.find?.((x) => x.type === "text")?.text ?? ""),
     }));
 
-    const finalPrompt = buildPrompt(sysContent, prevMsgs, userPrompt);
+    if (!overchatMessages.length)
+      return res.status(400).json({ error: { message: "No messages" } });
 
-    // Init fresh cookie jar per request (Vercel stateless)
-    const cookies = buildInitialCookies();
-
-    await initSession(cookies);
-    console.log(`[Olabiba] sending prompt len=${finalPrompt.length}`);
-
-    const msgStatus = await sendMessage(cookies, finalPrompt);
-    console.log(`[Olabiba] message.php status=${msgStatus}`);
-
-    const { status: streamStatus, answer } = await readStream(cookies);
-    console.log(`[Olabiba] stream status=${streamStatus} answer len=${answer.length}`);
-
-    if (answer) {
-      postSide(cookies, userPrompt, answer); // async, ga ditunggu
-    }
+    const answer = await callOverchat(overchatMessages);
 
     return res.status(200).json({
       choices: [{
         message: {
           role:    "assistant",
-          content: answer || "_(Tidak ada respons, coba lagi bro!)_",
+          content: answer.trim() || "_(Tidak ada respons, coba lagi bro!)_",
         },
       }],
-      _meta: { source: "olabiba" },
+      _meta: { model: MODEL },
     });
 
   } catch (err) {
