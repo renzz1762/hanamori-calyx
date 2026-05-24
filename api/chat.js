@@ -6,7 +6,7 @@ const crypto = require("node:crypto");
 //   Model: gemini-3.1-flash-lite-preview
 // ================================================================
 
-const BASE = "https://notegpt.io";
+const BASE  = "https://notegpt.io";
 const MODEL = "gemini-3.1-flash-lite-preview";
 
 const USER_AGENT =
@@ -21,12 +21,12 @@ function randomNumber(length = 9) {
 
 function makeSboxGuid() {
   const now = Math.floor(Date.now() / 1000);
-  const raw = `${now}|13|${randomNumber(9)}`;
+  const raw  = `${now}|13|${randomNumber(9)}`;
   return Buffer.from(raw).toString("base64");
 }
 
 function makeCookieHeader() {
-  const now = Math.floor(Date.now() / 1000);
+  const now             = Math.floor(Date.now() / 1000);
   const anonymousUserId = crypto.randomUUID();
   return [
     `sbox-guid=${encodeURIComponent(makeSboxGuid())}`,
@@ -37,8 +37,7 @@ function makeCookieHeader() {
   ].join("; ");
 }
 
-// ── Konversi messages OpenAI-style → history NoteGPT ─────────────
-// NoteGPT pakai array [{user, assistant}], ambil 5 pasang terakhir
+// ── Build history messages ────────────────────────────────────────
 function buildHistoryMessages(chatMsgs) {
   const pairs = [];
   let i = 0;
@@ -50,14 +49,13 @@ function buildHistoryMessages(chatMsgs) {
       i++;
     }
   }
-  // Ambil 5 pasang terakhir, format jadi flat messages
   return pairs.slice(-5).flatMap((p) => [
-    { role: "user", content: p.user },
+    { role: "user",      content: p.user },
     { role: "assistant", content: p.assistant },
   ]);
 }
 
-// ── Parse SSE stream jadi teks jawaban ───────────────────────────
+// ── Parse SSE ────────────────────────────────────────────────────
 function parseSSE(rawBody) {
   let result = "";
   for (const line of rawBody.split(/\r?\n/)) {
@@ -67,59 +65,86 @@ function parseSSE(rawBody) {
     if (!raw || raw === "[DONE]") continue;
     try {
       const json = JSON.parse(raw);
-      if (json.text) result += json.text;
+      if (typeof json.text === "string") result += json.text;
       if (json.done) break;
     } catch (_) {}
   }
   return result;
 }
 
-// ── Fetch SSE stream dari NoteGPT ────────────────────────────────
+// ── Collect stream via Node.js readable (robust untuk Vercel) ────
+async function readStream(readable) {
+  const chunks = [];
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === "string" ? chunk : chunk.toString("utf8"));
+  }
+  return chunks.join("");
+}
+
+// ── Panggil NoteGPT ──────────────────────────────────────────────
 async function callNoteGPT(prompt, historyMessages) {
   const conversationId = crypto.randomUUID();
-  const cookieHeader = makeCookieHeader();
+  const cookieHeader   = makeCookieHeader();
 
   const payload = {
-    message: prompt,
-    language: "auto",
-    model: MODEL,
-    tone: "default",
-    length: "moderate",
-    conversation_id: conversationId,
-    image_urls: [],
+    message:          prompt,
+    language:         "auto",
+    model:            MODEL,
+    tone:             "default",
+    length:           "moderate",
+    conversation_id:  conversationId,
+    image_urls:       [],
     history_messages: historyMessages,
-    chat_mode: "standard",
+    chat_mode:        "standard",
   };
 
   const response = await fetch(`${BASE}/api/v2/chat/stream`, {
     method: "POST",
     headers: {
       "sec-ch-ua-platform": `"Android"`,
-      "User-Agent": USER_AGENT,
-      "sec-ch-ua": `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
-      "Content-Type": "application/json",
-      "sec-ch-ua-mobile": "?1",
-      Accept: "*/*",
-      Origin: BASE,
-      "sec-fetch-site": "same-origin",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-dest": "empty",
-      Referer: `${BASE}/ai-chat`,
-      "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-      Cookie: cookieHeader,
-      priority: "u=1, i",
+      "User-Agent":          USER_AGENT,
+      "sec-ch-ua":           `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
+      "Content-Type":        "application/json",
+      "sec-ch-ua-mobile":    "?1",
+      Accept:                "text/event-stream, */*",
+      Origin:                BASE,
+      "sec-fetch-site":      "same-origin",
+      "sec-fetch-mode":      "cors",
+      "sec-fetch-dest":      "empty",
+      Referer:               `${BASE}/ai-chat`,
+      "Accept-Language":     "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+      Cookie:                cookieHeader,
+      priority:              "u=1, i",
     },
     body: JSON.stringify(payload),
   });
 
+  // Log status untuk debug di Vercel logs
+  console.log(`[NoteGPT] status=${response.status} content-type=${response.headers.get("content-type")}`);
+
   if (!response.ok) {
     const errText = await response.text().catch(() => "");
-    throw new Error(`NoteGPT error ${response.status}: ${errText}`);
+    console.error(`[NoteGPT] error body: ${errText.slice(0, 300)}`);
+    throw new Error(`NoteGPT error ${response.status}`);
   }
 
-  // Baca stream sebagai text (Node 18+ / Vercel Edge Runtime support)
-  const rawBody = await response.text();
+  // Coba baca via body stream, fallback ke .text()
+  let rawBody = "";
+  try {
+    if (response.body && typeof response.body[Symbol.asyncIterator] === "function") {
+      rawBody = await readStream(response.body);
+    } else {
+      rawBody = await response.text();
+    }
+  } catch (e) {
+    console.error("[NoteGPT] stream read error:", e.message);
+    rawBody = await response.text().catch(() => "");
+  }
+
+  console.log(`[NoteGPT] rawBody length=${rawBody.length}, preview=${rawBody.slice(0, 200)}`);
+
   const answer = parseSSE(rawBody);
+  console.log(`[NoteGPT] parsed answer length=${answer.length}`);
 
   return { answer, conversationId };
 }
@@ -128,7 +153,7 @@ async function callNoteGPT(prompt, historyMessages) {
 //   VERCEL HANDLER
 // ================================================================
 module.exports = async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin",  "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
@@ -140,11 +165,10 @@ module.exports = async function handler(req, res) {
   try {
     const { messages = [] } = req.body;
 
-    // Pisah system prompt & chat messages
     const systemMsg = messages.find((m) => m.role === "system");
     const chatMsgs  = messages.filter((m) => m.role !== "system");
 
-    // Prompt terakhir dari user
+    // Prompt terakhir user
     const lastUserMsg = [...chatMsgs].reverse().find((m) => m.role === "user");
     const userPrompt  = lastUserMsg
       ? (typeof lastUserMsg.content === "string"
@@ -156,38 +180,34 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: { message: "No user message found" } });
     }
 
-    // Build history (semua pesan kecuali yang terakhir dari user)
-    const historyRaw = chatMsgs.slice(0, -1);
-
-    // Sisipkan system prompt sebagai pasangan user/assistant pertama
+    // History (semua kecuali pesan user terakhir)
+    const historyRaw      = chatMsgs.slice(0, -1);
     const historyMessages = [];
+
     if (systemMsg) {
       const sysContent = typeof systemMsg.content === "string"
         ? systemMsg.content
         : JSON.stringify(systemMsg.content);
-      historyMessages.push({ role: "user", content: sysContent });
+      historyMessages.push({ role: "user",      content: sysContent });
       historyMessages.push({ role: "assistant", content: "Siap, aku mengerti." });
     }
     historyMessages.push(...buildHistoryMessages(historyRaw));
 
-    // Panggil NoteGPT
     const { answer, conversationId } = await callNoteGPT(userPrompt, historyMessages);
 
+    // Kalau NoteGPT return kosong, coba fallback message
+    const finalAnswer = answer.trim() || "_(Tidak ada respons dari server, coba lagi bro!)_";
+
     return res.status(200).json({
-      choices: [
-        {
-          message: {
-            role: "assistant",
-            content: answer.trim() || "_(Tidak ada respons)_",
-          },
+      choices: [{
+        message: {
+          role:    "assistant",
+          content: finalAnswer,
         },
-      ],
-      // Info tambahan (opsional, untuk debug)
-      _meta: {
-        model: MODEL,
-        conversation_id: conversationId,
-      },
+      }],
+      _meta: { model: MODEL, conversation_id: conversationId },
     });
+
   } catch (err) {
     console.error("Proxy error:", err);
     return res.status(500).json({
