@@ -2,116 +2,126 @@ const crypto = require("node:crypto");
 
 // ================================================================
 //   HANAMORI CALYX AI — chat.js
-//   API  : DeepAI (https://deepai.org)
-//   Model: standard
+//   API  : NoteGPT (https://notegpt.io)
+//   Model: gemini-3.1-flash-lite-preview
 // ================================================================
 
-const API = "https://api.deepai.org/hacking_is_a_serious_crime";
-const SAVE_SESSION_API = "https://api.deepai.org/save_chat_session";
+const BASE = "https://notegpt.io";
+const MODEL = "gemini-3.1-flash-lite-preview";
 
 const USER_AGENT =
   "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
-// ── MD5-like hash (sama persis dari gist asli) ───────────────────
-function md5Like(input) {
-  const a = [];
-  for (let b = 0; b < 64; ) {
-    a[b] = 0 | (4294967296 * Math.sin(++b % Math.PI));
-  }
-  let d, e, f;
-  let g = [(d = 1732584193), (e = 4023233417), ~d, ~e];
-  const h = [];
-  let l = unescape(encodeURI(input)) + "\u0080";
-  let k = l.length;
-  let c = (--k / 4 + 2) | 15;
-  h[--c] = 8 * k;
-  while (~k) { h[k >> 2] |= l.charCodeAt(k) << (8 * k--); }
-  for (let b = 0, l = 0; b < c; b += 16) {
-    for (
-      k = g;
-      l < 64;
-      k = [
-        (f = k[3]),
-        d + (((f = k[0] + [d & e | ~d & f, f & d | ~f & e, d ^ e ^ f, e ^ (d | ~f)][(k = l >> 4)] +
-          a[l] + ~~h[b | ([l, 5 * l + 1, 3 * l + 5, 7 * l][k] & 15)]) <<
-          (k = [7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21][4 * k + (l++ % 4)])) | (f >>> -k)),
-        d,
-        e,
-      ]
-    ) {
-      d = k[1] | 0;
-      e = k[2];
+// ── Helpers ──────────────────────────────────────────────────────
+function randomNumber(length = 9) {
+  let r = "";
+  for (let i = 0; i < length; i++) r += Math.floor(Math.random() * 10);
+  return r;
+}
+
+function makeSboxGuid() {
+  const now = Math.floor(Date.now() / 1000);
+  const raw = `${now}|13|${randomNumber(9)}`;
+  return Buffer.from(raw).toString("base64");
+}
+
+function makeCookieHeader() {
+  const now = Math.floor(Date.now() / 1000);
+  const anonymousUserId = crypto.randomUUID();
+  return [
+    `sbox-guid=${encodeURIComponent(makeSboxGuid())}`,
+    `anonymous_user_id=${anonymousUserId}`,
+    `_gid=GA1.2.${randomNumber(9)}.${now}`,
+    `_ga=GA1.2.${randomNumber(9)}.${now}`,
+    `_ga_PFX3BRW5RQ=GS2.1.s${now}$o1$g1$t${now}$j20$l0$h${randomNumber(10)}`,
+  ].join("; ");
+}
+
+// ── Konversi messages OpenAI-style → history NoteGPT ─────────────
+// NoteGPT pakai array [{user, assistant}], ambil 5 pasang terakhir
+function buildHistoryMessages(chatMsgs) {
+  const pairs = [];
+  let i = 0;
+  while (i < chatMsgs.length - 1) {
+    if (chatMsgs[i].role === "user" && chatMsgs[i + 1]?.role === "assistant") {
+      pairs.push({ user: chatMsgs[i].content, assistant: chatMsgs[i + 1].content });
+      i += 2;
+    } else {
+      i++;
     }
-    for (l = 4; l; ) { g[--l] += k[l]; }
   }
+  // Ambil 5 pasang terakhir, format jadi flat messages
+  return pairs.slice(-5).flatMap((p) => [
+    { role: "user", content: p.user },
+    { role: "assistant", content: p.assistant },
+  ]);
+}
+
+// ── Parse SSE stream jadi teks jawaban ───────────────────────────
+function parseSSE(rawBody) {
   let result = "";
-  for (let l = 0; l < 32; ) {
-    result += ((g[l >> 3] >> (4 * (1 ^ l++))) & 15).toString(16);
+  for (const line of rawBody.split(/\r?\n/)) {
+    const clean = line.trim();
+    if (!clean.startsWith("data:")) continue;
+    const raw = clean.replace(/^data:\s*/, "").trim();
+    if (!raw || raw === "[DONE]") continue;
+    try {
+      const json = JSON.parse(raw);
+      if (json.text) result += json.text;
+      if (json.done) break;
+    } catch (_) {}
   }
-  return result.split("").reverse().join("");
+  return result;
 }
 
-// ── Generate api-key ─────────────────────────────────────────────
-function generateIslandKey() {
-  const randomNumber = Math.round(Math.random() * 100000000000).toString();
-  const hash = md5Like(
-    USER_AGENT +
-      md5Like(
-        USER_AGENT +
-          md5Like(
-            USER_AGENT +
-              randomNumber +
-              "hackers_become_a_little_stinkier_every_time_they_hack"
-          )
-      )
-  );
-  return `tryit-${randomNumber}-${hash}`;
-}
+// ── Fetch SSE stream dari NoteGPT ────────────────────────────────
+async function callNoteGPT(prompt, historyMessages) {
+  const conversationId = crypto.randomUUID();
+  const cookieHeader = makeCookieHeader();
 
-// ── FormData builder ─────────────────────────────────────────────
-function createFormData(fields) {
-  const form = new FormData();
-  for (const [key, value] of Object.entries(fields)) {
-    form.append(key, value);
-  }
-  return form;
-}
-
-// ── Base headers ─────────────────────────────────────────────────
-function baseHeaders(extra = {}) {
-  return {
-    "sec-ch-ua-platform": `"Android"`,
-    "user-agent": USER_AGENT,
-    "sec-ch-ua": `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
-    "sec-ch-ua-mobile": "?1",
-    accept: "*/*",
-    origin: "https://deepai.org",
-    "sec-fetch-site": "same-site",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-dest": "empty",
-    "accept-language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-    priority: "u=1, i",
-    ...extra,
+  const payload = {
+    message: prompt,
+    language: "auto",
+    model: MODEL,
+    tone: "default",
+    length: "moderate",
+    conversation_id: conversationId,
+    image_urls: [],
+    history_messages: historyMessages,
+    chat_mode: "standard",
   };
-}
 
-// ── Save session ke DeepAI (opsional, biar history tersimpan) ────
-async function saveChatSession(sessionUuid, messages) {
-  try {
-    const form = createFormData({
-      uuid: sessionUuid,
-      title: "",
-      chat_style: "chat",
-      messages: JSON.stringify(messages),
-    });
-    await fetch(SAVE_SESSION_API, {
-      method: "POST",
-      headers: baseHeaders(),
-      body: form,
-    });
-  } catch (_) {
-    // Abaikan error save session, tidak kritikal
+  const response = await fetch(`${BASE}/api/v2/chat/stream`, {
+    method: "POST",
+    headers: {
+      "sec-ch-ua-platform": `"Android"`,
+      "User-Agent": USER_AGENT,
+      "sec-ch-ua": `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
+      "Content-Type": "application/json",
+      "sec-ch-ua-mobile": "?1",
+      Accept: "*/*",
+      Origin: BASE,
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      Referer: `${BASE}/ai-chat`,
+      "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+      Cookie: cookieHeader,
+      priority: "u=1, i",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    throw new Error(`NoteGPT error ${response.status}: ${errText}`);
   }
+
+  // Baca stream sebagai text (Node 18+ / Vercel Edge Runtime support)
+  const rawBody = await response.text();
+  const answer = parseSSE(rawBody);
+
+  return { answer, conversationId };
 }
 
 // ================================================================
@@ -130,75 +140,53 @@ module.exports = async function handler(req, res) {
   try {
     const { messages = [] } = req.body;
 
-    // Pisah system prompt & format history
+    // Pisah system prompt & chat messages
     const systemMsg = messages.find((m) => m.role === "system");
-    const chatMsgs = messages.filter((m) => m.role !== "system");
+    const chatMsgs  = messages.filter((m) => m.role !== "system");
 
-    // Build chat history untuk DeepAI
-    const chatHistory = [];
+    // Prompt terakhir dari user
+    const lastUserMsg = [...chatMsgs].reverse().find((m) => m.role === "user");
+    const userPrompt  = lastUserMsg
+      ? (typeof lastUserMsg.content === "string"
+          ? lastUserMsg.content
+          : lastUserMsg.content?.find?.((x) => x.type === "text")?.text || "")
+      : "";
 
-    // System prompt disisipkan sebagai pesan pertama
+    if (!userPrompt) {
+      return res.status(400).json({ error: { message: "No user message found" } });
+    }
+
+    // Build history (semua pesan kecuali yang terakhir dari user)
+    const historyRaw = chatMsgs.slice(0, -1);
+
+    // Sisipkan system prompt sebagai pasangan user/assistant pertama
+    const historyMessages = [];
     if (systemMsg) {
-      chatHistory.push({
-        role: "user",
-        content: typeof systemMsg.content === "string"
-          ? systemMsg.content
-          : JSON.stringify(systemMsg.content),
-      });
-      chatHistory.push({ role: "assistant", content: "Siap, aku mengerti." });
+      const sysContent = typeof systemMsg.content === "string"
+        ? systemMsg.content
+        : JSON.stringify(systemMsg.content);
+      historyMessages.push({ role: "user", content: sysContent });
+      historyMessages.push({ role: "assistant", content: "Siap, aku mengerti." });
     }
+    historyMessages.push(...buildHistoryMessages(historyRaw));
 
-    for (const m of chatMsgs) {
-      chatHistory.push({
-        role: m.role,
-        content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
-      });
-    }
-
-    const sessionUuid = crypto.randomUUID();
-    const apiKey = generateIslandKey();
-
-    const form = createFormData({
-      chat_style: "chat",
-      chatHistory: JSON.stringify(chatHistory),
-      model: "standard",
-      session_uuid: sessionUuid,
-      sensitivity_request_id: crypto.randomUUID(),
-      hacker_is_stinky: "very_stinky",
-      enabled_tools: JSON.stringify(["image_generator", "image_editor"]),
-    });
-
-    const response = await fetch(API, {
-      method: "POST",
-      headers: baseHeaders({ "api-key": apiKey }),
-      body: form,
-    });
-
-    const answer = await response.text();
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        error: { message: `DeepAI error ${response.status}: ${answer}` },
-      });
-    }
-
-    const trimmedAnswer = answer.trim();
-
-    // Save session async (tidak nunggu)
-    saveChatSession(sessionUuid, [
-      ...chatHistory,
-      { role: "assistant", content: trimmedAnswer },
-    ]);
+    // Panggil NoteGPT
+    const { answer, conversationId } = await callNoteGPT(userPrompt, historyMessages);
 
     return res.status(200).json({
       choices: [
         {
           message: {
             role: "assistant",
-            content: trimmedAnswer || "_(Tidak ada respons)_",
+            content: answer.trim() || "_(Tidak ada respons)_",
           },
         },
       ],
+      // Info tambahan (opsional, untuk debug)
+      _meta: {
+        model: MODEL,
+        conversation_id: conversationId,
+      },
     });
   } catch (err) {
     console.error("Proxy error:", err);
