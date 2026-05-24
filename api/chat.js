@@ -2,154 +2,175 @@ const crypto = require("node:crypto");
 
 // ================================================================
 //   HANAMORI CALYX AI — chat.js
-//   API  : NoteGPT (https://notegpt.io)
-//   Model: gemini-3.1-flash-lite-preview
+//   API  : Olabiba AI (https://www.olabiba.com)
+//   Model: built-in (no key needed)
 // ================================================================
 
-const BASE  = "https://notegpt.io";
-const MODEL = "gemini-3.1-flash-lite-preview";
-const UA    = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
+const BASE = "https://www.olabiba.com";
+const UA   = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
-function randomNumber(length = 9) {
-  let r = "";
-  for (let i = 0; i < length; i++) r += Math.floor(Math.random() * 10);
+// ── Cookie helpers ───────────────────────────────────────────────
+function nowUnix() { return Math.floor(Date.now() / 1000); }
+
+function buildInitialCookies() {
+  const t = nowUnix();
+  const consentUUID = crypto.randomUUID();
+  const FCCDCF = encodeURIComponent(JSON.stringify([
+    null, null, null, null, null, null,
+    [[[32, JSON.stringify([consentUUID, [t, 895000000]])]]],
+  ]));
+  return {
+    olabiba_consent: `true%3A${t + 604800}`,
+    FCCDCF,
+  };
+}
+
+function cookieHeader(cookies) {
+  return Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join("; ");
+}
+
+function saveSetCookie(cookies, headers) {
+  const list = typeof headers.getSetCookie === "function"
+    ? headers.getSetCookie()
+    : headers.get("set-cookie") ? [headers.get("set-cookie")] : [];
+  for (const raw of list) {
+    const first = raw.split(";")[0];
+    const idx = first.indexOf("=");
+    if (idx !== -1) cookies[first.slice(0, idx)] = first.slice(idx + 1);
+  }
+}
+
+// ── Generic request dengan cookie jar ───────────────────────────
+async function req(cookies, url, options = {}) {
+  const hdrs = { "user-agent": UA, "accept-language": "id-ID,id;q=0.9", ...options.headers };
+  const c = cookieHeader(cookies);
+  if (c) hdrs["cookie"] = c;
+  const r = await fetch(url, { ...options, headers: hdrs });
+  saveSetCookie(cookies, r.headers);
   return r;
 }
 
-function makeSboxGuid() {
-  const now = Math.floor(Date.now() / 1000);
-  return Buffer.from(`${now}|13|${randomNumber(9)}`).toString("base64");
+// ── Init session (ambil cookies dari homepage) ───────────────────
+async function initSession(cookies) {
+  await req(cookies, `${BASE}/`, {
+    method: "GET",
+    headers: { accept: "text/html,application/xhtml+xml,*/*;q=0.8" },
+  });
 }
 
-function makeCookieHeader() {
-  const now = Math.floor(Date.now() / 1000);
-  return [
-    `sbox-guid=${encodeURIComponent(makeSboxGuid())}`,
-    `anonymous_user_id=${crypto.randomUUID()}`,
-    `_gid=GA1.2.${randomNumber(9)}.${now}`,
-    `_ga=GA1.2.${randomNumber(9)}.${now}`,
-    `_ga_PFX3BRW5RQ=GS2.1.s${now}$o1$g1$t${now}$j20$l0$h${randomNumber(10)}`,
-  ].join("; ");
+// ── Kirim pesan ke Olabiba ───────────────────────────────────────
+async function sendMessage(cookies, text) {
+  const form = new FormData();
+  form.set("text",    text);
+  form.set("mood",    "friendly");
+  form.set("lang",    "id");
+  form.set("adblock", "No");
+  form.set("theme",   "dark");
+  const r = await req(cookies, `${BASE}/php/message.php`, {
+    method: "POST",
+    body:   form,
+    headers: {
+      accept:           "*/*",
+      origin:           BASE,
+      referer:          `${BASE}/`,
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+    },
+  });
+  await r.text().catch(() => "");
+  return r.status;
 }
 
-function buildHistoryMessages(chatMsgs) {
-  const pairs = [];
-  let i = 0;
-  while (i < chatMsgs.length - 1) {
-    if (chatMsgs[i].role === "user" && chatMsgs[i + 1]?.role === "assistant") {
-      pairs.push({ user: chatMsgs[i].content, assistant: chatMsgs[i + 1].content });
-      i += 2;
-    } else { i++; }
-  }
-  return pairs.slice(-5).flatMap((p) => [
-    { role: "user",      content: p.user },
-    { role: "assistant", content: p.assistant },
-  ]);
+// ── Decode HTML entities ─────────────────────────────────────────
+function decodeHtml(t) {
+  return t.replaceAll("&nbsp;"," ").replaceAll("&amp;","&")
+          .replaceAll("&lt;","<").replaceAll("&gt;",">")
+          .replaceAll("&quot;",'"').replaceAll("&#039;","'").replaceAll("&#39;","'");
 }
 
-// ── Baca SSE stream chunk by chunk (paling reliable di Vercel) ───
-async function readSSEStream(responseBody) {
-  const reader  = responseBody.getReader();
+// ── Bersihkan jawaban dari tag/markup internal Olabiba ───────────
+function cleanAnswer(text) {
+  let o = text || "";
+  const qi = o.indexOf("<!--QUERY:");
+  if (qi !== -1) o = o.slice(0, qi);
+  const fi = o.search(/\[FOLLOWUP(?::[^\]]*)?\]/i);
+  if (fi !== -1) o = o.slice(0, fi);
+  return o
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/\[ELABORATE\]/gi, "")
+    .replace(/\[FOLLOWUP(?::[^\]]*)?\][\s\S]*?(?:\[\/FOLLOWUP\])?/gi, "")
+    .replace(/\[\/FOLLOWUP\]/gi, "")
+    .replace(/\\n/g, "\n")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// ── Baca SSE stream jawaban ──────────────────────────────────────
+async function readStream(cookies) {
+  const r = await req(cookies, `${BASE}/php/stream.php`, {
+    method: "GET",
+    headers: {
+      accept:           "text/event-stream",
+      "cache-control":  "no-cache",
+      referer:          `${BASE}/`,
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+    },
+  });
+
+  if (!r.body) return { status: r.status, answer: "" };
+
+  const reader  = r.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = "";
-  let answer = "";
+  let buffer = "", answer = "";
 
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
-
     buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-
+    const lines = buffer.split(/\r?\n/);
+    buffer = lines.pop() || "";
     for (const rawLine of lines) {
       const line = rawLine.trim();
       if (!line.startsWith("data:")) continue;
       const data = line.slice(5).trim();
       if (!data || data === "[DONE]") continue;
-      try {
-        const json = JSON.parse(data);
-        // Format NoteGPT: { text: "...", done: false }
-        if (typeof json.text === "string") answer += json.text;
-        // Format OpenAI-style fallback: choices[0].delta.content
-        const delta = json.choices?.[0]?.delta?.content;
-        if (typeof delta === "string") answer += delta;
-        if (json.done === true) return answer;
-      } catch (_) {}
+      answer += decodeHtml(data);
     }
   }
 
-  return answer;
+  return { status: r.status, answer: cleanAnswer(answer) };
 }
 
-async function callNoteGPT(prompt, historyMessages) {
-  const conversationId = crypto.randomUUID();
+// ── Fetch media & save (biar session valid) ──────────────────────
+async function postSide(cookies, question, answer) {
+  // fetch_media
+  await req(cookies, `${BASE}/php/fetch_media.php`, {
+    method: "POST",
+    headers: { accept:"*/*", origin:BASE, referer:`${BASE}/`, "content-length":"0", "sec-fetch-site":"same-origin","sec-fetch-mode":"cors","sec-fetch-dest":"empty" },
+  }).then(r => r.text().catch(()=>"")).catch(()=>{});
 
-  const payload = {
-    message:          prompt,
-    language:         "auto",
-    model:            MODEL,
-    tone:             "default",
-    length:           "moderate",
-    conversation_id:  conversationId,
-    image_urls:       [],
-    history_messages: historyMessages,
-    chat_mode:        "standard",
-  };
+  // save-response
+  const body = new URLSearchParams({ question, answer, html: answer });
+  await req(cookies, `${BASE}/php/save-response.php`, {
+    method: "POST", body,
+    headers: { accept:"*/*", origin:BASE, referer:`${BASE}/`, "content-type":"application/x-www-form-urlencoded","sec-fetch-site":"same-origin","sec-fetch-mode":"cors","sec-fetch-dest":"empty" },
+  }).then(r => r.text().catch(()=>"")).catch(()=>{});
+}
 
-  const response = await fetch(`${BASE}/api/v2/chat/stream`, {
-    method:  "POST",
-    headers: {
-      "sec-ch-ua-platform": `"Android"`,
-      "User-Agent":          UA,
-      "sec-ch-ua":           `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`,
-      "Content-Type":        "application/json",
-      "sec-ch-ua-mobile":    "?1",
-      Accept:                "text/event-stream, */*",
-      Origin:                BASE,
-      "sec-fetch-site":      "same-origin",
-      "sec-fetch-mode":      "cors",
-      "sec-fetch-dest":      "empty",
-      Referer:               `${BASE}/ai-chat`,
-      "Accept-Language":     "id-ID,id;q=0.9",
-      Cookie:                makeCookieHeader(),
-      priority:              "u=1, i",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  console.log(`[NoteGPT] status=${response.status} ct=${response.headers.get("content-type")}`);
-
-  if (!response.ok) {
-    const t = await response.text().catch(() => "");
-    throw new Error(`NoteGPT ${response.status}: ${t.slice(0, 200)}`);
+// ── Build context prompt dari history ────────────────────────────
+function buildPrompt(systemContent, chatMsgs, userPrompt) {
+  const lines = [];
+  if (systemContent) lines.push(`[System]: ${systemContent}`);
+  // Ambil 6 pesan terakhir sebagai konteks
+  for (const m of chatMsgs.slice(-6)) {
+    if (m.role === "user")      lines.push(`User: ${m.content}`);
+    if (m.role === "assistant") lines.push(`Assistant: ${m.content}`);
   }
-
-  let answer = "";
-
-  // Coba stream reader dulu (paling akurat)
-  if (response.body?.getReader) {
-    answer = await readSSEStream(response.body);
-  } else {
-    // Fallback: .text() langsung
-    const raw = await response.text();
-    console.log(`[NoteGPT] fallback text len=${raw.length} preview=${raw.slice(0, 200)}`);
-    for (const line of raw.split(/\r?\n/)) {
-      const clean = line.trim();
-      if (!clean.startsWith("data:")) continue;
-      const data = clean.slice(5).trim();
-      if (!data || data === "[DONE]") continue;
-      try {
-        const json = JSON.parse(data);
-        if (typeof json.text === "string") answer += json.text;
-        const delta = json.choices?.[0]?.delta?.content;
-        if (typeof delta === "string") answer += delta;
-      } catch (_) {}
-    }
-  }
-
-  console.log(`[NoteGPT] answer len=${answer.length}`);
-  return { answer, conversationId };
+  lines.push(`User: ${userPrompt}`);
+  return lines.join("\n");
 }
 
 // ================================================================
@@ -167,10 +188,10 @@ module.exports = async function handler(req, res) {
   try {
     const { messages = [] } = req.body;
 
-    const systemMsg = messages.find((m) => m.role === "system");
-    const chatMsgs  = messages.filter((m) => m.role !== "system");
-
+    const systemMsg  = messages.find((m) => m.role === "system");
+    const chatMsgs   = messages.filter((m) => m.role !== "system");
     const lastUser   = [...chatMsgs].reverse().find((m) => m.role === "user");
+
     const userPrompt = lastUser
       ? (typeof lastUser.content === "string"
           ? lastUser.content
@@ -180,25 +201,41 @@ module.exports = async function handler(req, res) {
     if (!userPrompt)
       return res.status(400).json({ error: { message: "No user message" } });
 
-    const historyMessages = [];
-    if (systemMsg) {
-      const sys = typeof systemMsg.content === "string"
-        ? systemMsg.content : JSON.stringify(systemMsg.content);
-      historyMessages.push({ role: "user",      content: sys });
-      historyMessages.push({ role: "assistant", content: "Siap, aku mengerti." });
-    }
-    historyMessages.push(...buildHistoryMessages(chatMsgs.slice(0, -1)));
+    const sysContent = systemMsg
+      ? (typeof systemMsg.content === "string" ? systemMsg.content : JSON.stringify(systemMsg.content))
+      : "";
 
-    const { answer, conversationId } = await callNoteGPT(userPrompt, historyMessages);
+    const prevMsgs = chatMsgs.slice(0, -1).map(m => ({
+      role:    m.role,
+      content: typeof m.content === "string" ? m.content : (m.content?.find?.(x=>x.type==="text")?.text ?? ""),
+    }));
+
+    const finalPrompt = buildPrompt(sysContent, prevMsgs, userPrompt);
+
+    // Init fresh cookie jar per request (Vercel stateless)
+    const cookies = buildInitialCookies();
+
+    await initSession(cookies);
+    console.log(`[Olabiba] sending prompt len=${finalPrompt.length}`);
+
+    const msgStatus = await sendMessage(cookies, finalPrompt);
+    console.log(`[Olabiba] message.php status=${msgStatus}`);
+
+    const { status: streamStatus, answer } = await readStream(cookies);
+    console.log(`[Olabiba] stream status=${streamStatus} answer len=${answer.length}`);
+
+    if (answer) {
+      postSide(cookies, userPrompt, answer); // async, ga ditunggu
+    }
 
     return res.status(200).json({
       choices: [{
         message: {
           role:    "assistant",
-          content: answer.trim() || "_(Tidak ada respons, coba lagi bro!)_",
+          content: answer || "_(Tidak ada respons, coba lagi bro!)_",
         },
       }],
-      _meta: { model: MODEL, conversation_id: conversationId },
+      _meta: { source: "olabiba" },
     });
 
   } catch (err) {
