@@ -1218,7 +1218,7 @@ function loadSaved(id) {
   document.getElementById('langLabel').textContent = s.lang.toUpperCase();
   renderCodeSafe(s.code, s.lang);
   ['copyBtn','saveBtn','dlBtn'].forEach(id2 => document.getElementById(id2).style.display = 'flex');
-  document.getElementById('prevBtn').style.display = (s.lang === 'html') ? 'flex' : 'none';
+  document.getElementById('prevBtn').style.display = (['html','css','js'].includes(s.lang)) ? 'flex' : 'none';
   navTo('home', document.getElementById('navHome'));
   showToast('📂 ' + s.name + ' di-load!');
 }
@@ -1294,8 +1294,19 @@ function toggleVoice() {
 let previewBlobUrl = null;
 let isPreviewFull = false;
 function openPreview() {
-  if (!currentCode || currentLang !== 'html') { showToast('⚠ Preview hanya untuk kode HTML'); return; }
-  const blob = new Blob([currentCode], { type: 'text/html;charset=utf-8' });
+  if (!currentCode) { showToast('⚠ Belum ada kode!'); return; }
+  let htmlContent = currentCode;
+  // Kalau bukan html, wrap dulu
+  if (currentLang !== 'html') {
+    if (currentLang === 'css') {
+      htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>\n${currentCode}\n</style></head><body style="padding:20px;font-family:sans-serif"><p style="opacity:.5;font-size:.8rem">⚠ Preview CSS tanpa HTML</p></body></html>`;
+    } else if (currentLang === 'js') {
+      htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{background:#0d1117;color:#e6edf3;font-family:'Share Tech Mono',monospace;padding:20px}#output{white-space:pre-wrap;font-size:.85rem}h3{color:#00d4ff;margin-bottom:12px}</style></head><body><h3>⚡ JS Output</h3><div id="output"></div><script>const _out=[];const _log=console.log;console.log=(...a)=>{_out.push(a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' '));document.getElementById('output').textContent=_out.join('\\n');_log(...a);};try{\n${currentCode}\n}catch(e){document.getElementById('output').textContent='❌ Error: '+e.message;}<\/script></body></html>`;
+    } else {
+      showToast('⚠ Preview hanya untuk HTML, CSS, atau JS'); return;
+    }
+  }
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
   if (previewBlobUrl) URL.revokeObjectURL(previewBlobUrl);
   previewBlobUrl = URL.createObjectURL(blob);
   document.getElementById('previewFrame').src = previewBlobUrl;
@@ -1316,16 +1327,28 @@ function toggleFullPreview() {
   isPreviewFull ? bd.classList.add('fullscreen') : bd.classList.remove('fullscreen');
 }
 function refreshPreviewModal() {
-  if (!currentCode || currentLang !== 'html') return;
-  const blob = new Blob([currentCode], { type: 'text/html;charset=utf-8' });
+  if (!currentCode) return;
+  let htmlContent = currentCode;
+  if (currentLang === 'css') {
+    htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>\n${currentCode}\n</style></head><body style="padding:20px;font-family:sans-serif"><p style="opacity:.5;font-size:.8rem">⚠ Preview CSS tanpa HTML</p></body></html>`;
+  } else if (currentLang === 'js') {
+    htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{background:#0d1117;color:#e6edf3;font-family:'Share Tech Mono',monospace;padding:20px}#output{white-space:pre-wrap;font-size:.85rem}h3{color:#00d4ff;margin-bottom:12px}</style></head><body><h3>⚡ JS Output</h3><div id="output"></div><script>const _out=[];const _log=console.log;console.log=(...a)=>{_out.push(a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' '));document.getElementById('output').textContent=_out.join('\\n');_log(...a);};try{\n${currentCode}\n}catch(e){document.getElementById('output').textContent='❌ Error: '+e.message;}<\/script></body></html>`;
+  }
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
   if (previewBlobUrl) URL.revokeObjectURL(previewBlobUrl);
   previewBlobUrl = URL.createObjectURL(blob);
   document.getElementById('previewFrame').src = previewBlobUrl;
   showToast('🔄 Refreshed!');
 }
 function openPreviewNewTab() {
-  if (!currentCode || currentLang !== 'html') return;
-  window.open(URL.createObjectURL(new Blob([currentCode], { type: 'text/html' })), '_blank');
+  if (!currentCode) return;
+  let htmlContent = currentCode;
+  if (currentLang === 'css') {
+    htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>\n${currentCode}\n</style></head><body style="padding:20px;font-family:sans-serif"><p style="opacity:.5;font-size:.8rem">⚠ Preview CSS tanpa HTML</p></body></html>`;
+  } else if (currentLang === 'js') {
+    htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{background:#0d1117;color:#e6edf3;font-family:'Share Tech Mono',monospace;padding:20px}#output{white-space:pre-wrap;font-size:.85rem}h3{color:#00d4ff;margin-bottom:12px}</style></head><body><h3>⚡ JS Output</h3><div id="output"></div><script>const _out=[];const _log=console.log;console.log=(...a)=>{_out.push(a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' '));document.getElementById('output').textContent=_out.join('\\n');_log(...a);};try{\n${currentCode}\n}catch(e){document.getElementById('output').textContent='❌ Error: '+e.message;}<\/script></body></html>`;
+  }
+  window.open(URL.createObjectURL(new Blob([htmlContent], { type: 'text/html' })), '_blank');
 }
 
 /* ================================================================
@@ -1408,7 +1431,7 @@ function loadChatSession(id) {
       document.getElementById('langLabel').textContent = active.label;
       renderCodeSafe(active.code, active.lang);
       ['copyBtn','saveBtn','dlBtn'].forEach(id2 => document.getElementById(id2).style.display = 'flex');
-      document.getElementById('prevBtn').style.display = (active.lang === 'html') ? 'flex' : 'none';
+      document.getElementById('prevBtn').style.display = (['html','css','js'].includes(active.lang)) ? 'flex' : 'none';
     }
     renderScriptTabs();
   } else { currentScripts = []; currentCode = ''; }
@@ -1486,7 +1509,7 @@ function switchScript(idx) {
   document.getElementById('langLabel').textContent = s.label;
   renderCodeSafe(s.code, s.lang);
   ['copyBtn','saveBtn','dlBtn'].forEach(id => document.getElementById(id).style.display = 'flex');
-  document.getElementById('prevBtn').style.display = (s.lang === 'html') ? 'flex' : 'none';
+  document.getElementById('prevBtn').style.display = (['html','css','js'].includes(s.lang)) ? 'flex' : 'none';
   renderScriptTabs();
   showToast('📄 ' + s.name);
 }
@@ -1937,9 +1960,10 @@ function renderMarkdown(text) {
   codeBlocks.forEach((cb, i) => {
     const langLabel = cb.lang ? cb.lang.toUpperCase() : 'CODE';
     const escapedCode = esc(cb.code);
-    const isPreviewable = cb.lang === 'html';
+    const isPreviewable = ['html', 'css', 'js'].includes(cb.lang);
+    const previewLabel = cb.lang === 'html' ? '🌐 Preview' : cb.lang === 'css' ? '🎨 Preview' : cb.lang === 'js' ? '⚡ Preview' : '';
     const previewBtn = isPreviewable
-      ? `<button onclick="openPreviewFromCode(this)" data-code="${encodeURIComponent(cb.code)}" style="padding:3px 9px;border-radius:5px;font-size:.58rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.08);color:#10b981;cursor:pointer;transition:all .2s" title="Preview HTML">🌐 Preview</button>`
+      ? `<button onclick="openPreviewFromCode(this)" data-code="${encodeURIComponent(cb.code)}" data-lang="${cb.lang}" style="padding:3px 9px;border-radius:5px;font-size:.58rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.08);color:#10b981;cursor:pointer;transition:all .2s" title="Preview">${previewLabel}</button>`
       : '';
     const blockId = 'cb_' + Date.now() + '_' + i;
     text = text.replace(`%%CB${i}%%`, `<div class="inline-code-block" id="${blockId}">
@@ -1989,9 +2013,87 @@ function saveInlineCode(btn, blockId) {
   showToast('💾 Script "' + name + '" tersimpan!');
 }
 function openPreviewFromCode(btn) {
-  const raw = decodeURIComponent(btn.dataset.code || '');
-  currentCode = raw; currentLang = 'html';
-  openPreview();
+  // Kumpulkan semua code block (html, css, js) dalam satu message bubble yang sama
+  const msgBubble = btn.closest('.msg-bubble') || btn.closest('.ai-msg') || btn.closest('[class*="msg"]') || btn.closest('.message');
+  const clickedLang = btn.dataset.lang || 'html';
+  const clickedCode = decodeURIComponent(btn.dataset.code || '');
+
+  let htmlCode = '';
+  let cssCode = '';
+  let jsCode = '';
+
+  if (msgBubble) {
+    // Ambil semua inline-code-block dalam bubble yang sama
+    const allBlocks = msgBubble.querySelectorAll('.inline-code-block');
+    allBlocks.forEach(block => {
+      const codeEl = block.querySelector('.icb-code');
+      if (!codeEl) return;
+      const lang = codeEl.dataset.lang || '';
+      const raw = decodeURIComponent(codeEl.dataset.raw || '');
+      if (lang === 'html') htmlCode = raw;
+      else if (lang === 'css') cssCode = raw;
+      else if (lang === 'js') jsCode = raw;
+    });
+  }
+
+  // Kalau tidak ada html tapi yang diklik css/js, set yang diklik sebagai tipe nya
+  if (!htmlCode && clickedLang === 'html') htmlCode = clickedCode;
+  if (!cssCode && clickedLang === 'css') cssCode = clickedCode;
+  if (!jsCode && clickedLang === 'js') jsCode = clickedCode;
+
+  // Gabungkan: inject CSS dan JS ke dalam HTML
+  let finalHtml = '';
+  if (htmlCode) {
+    // Inject CSS ke dalam <head> jika ada
+    if (cssCode) {
+      const styleTag = `<style>\n${cssCode}\n</style>`;
+      if (/<\/head>/i.test(htmlCode)) {
+        finalHtml = htmlCode.replace(/<\/head>/i, styleTag + '\n</head>');
+      } else {
+        finalHtml = styleTag + '\n' + htmlCode;
+      }
+    } else {
+      finalHtml = htmlCode;
+    }
+    // Inject JS ke sebelum </body> jika ada
+    if (jsCode) {
+      const scriptTag = `<script>\n${jsCode}\n<\/script>`;
+      if (/<\/body>/i.test(finalHtml)) {
+        finalHtml = finalHtml.replace(/<\/body>/i, scriptTag + '\n</body>');
+      } else {
+        finalHtml = finalHtml + '\n' + scriptTag;
+      }
+    }
+  } else if (cssCode && !htmlCode) {
+    // Hanya CSS: buat wrapper HTML
+    finalHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>\n${cssCode}\n</style></head><body><div style="padding:20px;font-family:sans-serif;color:#333"><p style="opacity:.5;font-size:.8rem">⚠ Preview CSS tanpa HTML — tampilan mungkin kosong</p></div></body></html>`;
+  } else if (jsCode && !htmlCode) {
+    // Hanya JS: buat wrapper HTML dengan console output
+    finalHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{background:#0d1117;color:#e6edf3;font-family:'Share Tech Mono',monospace;padding:20px}#output{white-space:pre-wrap;font-size:.85rem}h3{color:#00d4ff;margin-bottom:12px}</style></head><body><h3>⚡ JS Output</h3><div id="output"></div><script>
+const _out=[];const _log=console.log;console.log=(...a)=>{_out.push(a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' '));document.getElementById('output').textContent=_out.join('\\n');_log(...a);};
+try{
+${jsCode}
+}catch(e){document.getElementById('output').textContent='❌ Error: '+e.message;}
+<\/script></body></html>`;
+  } else {
+    finalHtml = clickedCode;
+  }
+
+  currentCode = finalHtml;
+  currentLang = 'html';
+  openPreviewCombined(finalHtml, cssCode ? 'HTML + CSS' : jsCode ? 'HTML + JS' : clickedLang.toUpperCase());
+}
+
+function openPreviewCombined(htmlContent, label) {
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  if (previewBlobUrl) URL.revokeObjectURL(previewBlobUrl);
+  previewBlobUrl = URL.createObjectURL(blob);
+  document.getElementById('previewFrame').src = previewBlobUrl;
+  const urlEl = document.getElementById('previewModalUrl');
+  if (urlEl) urlEl.textContent = label || 'Preview';
+  const pi = document.getElementById('previewInfo');
+  if (pi) pi.textContent = htmlContent.split('\n').length + ' baris';
+  document.getElementById('previewBackdrop').classList.add('open');
 }
 
 
