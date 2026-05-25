@@ -6,9 +6,10 @@ const crypto = require("node:crypto");
 //   Model: alibaba/qwen3-next-80b-a3b-instruct
 // ================================================================
 
-const API      = "https://api.overchat.ai/v1/chat/completions";
-const MODEL    = "alibaba/qwen3-next-80b-a3b-instruct";
-const PERSONA  = "qwen-3-landing";
+// SESUDAH
+const API     = process.env.OVERCHAT_API_URL;
+const MODEL   = process.env.OVERCHAT_MODEL;
+const PERSONA = process.env.OVERCHAT_PERSONA;
 const UA       = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
 function makeHeaders(deviceId) {
