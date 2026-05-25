@@ -13,17 +13,20 @@
 <!-- ══ INTRO ══ -->
 <div id="introOverlay">
   <div class="intro-bg-particles" id="introParts"></div>
-  <span class="intro-emoji-float" style="top:15%;left:8%">✨</span>
-  <span class="intro-emoji-float" style="top:25%;right:10%;animation-delay:.8s">🚀</span>
-  <span class="intro-emoji-float" style="bottom:20%;left:12%;animation-delay:1.6s">🎮</span>
-  <span class="intro-emoji-float" style="bottom:30%;right:8%;animation-delay:.4s">⚡</span>
+  <!-- Scanline effect -->
+  <div class="intro-scanline"></div>
+  <!-- Grid overlay -->
+  <div class="intro-grid"></div>
   <div class="intro-logo-wrap">
     <div class="intro-logo-ring">
       <img class="intro-logo-img" id="introLogoImg" src="" alt="HC">
     </div>
     <div class="intro-title">HANAMORI CALYX AI</div>
-    <div class="intro-sub">✦ v5.0 Initializing ✦</div>
+    <div class="intro-sub">◈ v5.0 INITIALIZING ◈</div>
     <div class="intro-bar-wrap"><div class="intro-bar"></div></div>
+    <div class="intro-status-row" id="introStatusRow">
+      <span class="intro-status-item" id="istat1">Loading modules...</span>
+    </div>
     <div class="intro-chars" id="introChars"></div>
   </div>
 </div>
@@ -111,11 +114,10 @@
   </div>
 </div>
 
-<!-- ══ AD OVERLAY ══ -->
+<!-- ══ AD OVERLAY — tengah, tanpa X ══ -->
 <div id="adOverlay">
   <div class="ad-box">
     <div class="ad-badge">📣 PROMO &amp; INFO</div>
-    <button class="ad-close-btn" onclick="closeAdOverlay()" title="Tutup iklan">✕</button>
     <div id="adContent"></div>
     <div id="adNavRow" class="ad-nav-row"></div>
     <div id="adDots" class="ad-dots-row"></div>
@@ -258,12 +260,18 @@
             <input type="file" id="inputFile" accept="*/*" style="display:none" onchange="handleFileSelect(event,'file')">
             <div class="voice-indicator" id="voiceIndicator">
               <div class="voice-bars"><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div></div>
-              <span>Sedang merekam... ketuk mic untuk berhenti</span>
+              <span>🎤 Merekam... ketuk mic untuk berhenti &amp; teks muncul di input</span>
             </div>
             <div class="attach-row">
               <button class="attach-icon-btn" onclick="showComingSoonOverlay('Foto')"><i class="fa-solid fa-image" style="color:#00d4ff"></i> Foto</button>
               <button class="attach-icon-btn" onclick="showComingSoonOverlay('Video')"><i class="fa-solid fa-video" style="color:#ff4d6d"></i> Video</button>
               <button class="attach-icon-btn" onclick="showComingSoonOverlay('File')"><i class="fa-solid fa-file-arrow-up" style="color:#7c3aed"></i> File</button>
+              <!-- Console toggle inline di attach-row -->
+              <button id="hcConsoleToggleBtn" onclick="HC_CONSOLE.toggle()">
+                <span class="hctb-icon">▶_</span>
+                <span class="hctb-label">CONSOLE</span>
+                <span class="hctb-badge" id="hctbBadge">0</span>
+              </button>
               <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Kirim pesan suara"><i class="fa-solid fa-microphone"></i></button>
             </div>
             <div class="pending-attach-wrap" id="pendingAttachWrap">

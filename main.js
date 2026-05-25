@@ -594,13 +594,15 @@ function initIntro() {
   if (CFG.LOGO_URL) il.src = CFG.LOGO_URL;
   const parts = document.getElementById('introParts');
   const colors = ['#00d4ff','#7c3aed','#ff4d6d','#10b981','#fbbf24'];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 24; i++) {
     const p = document.createElement('div');
     p.className = 'intro-particle';
-    const size = Math.random() * 8 + 4;
+    const size = Math.random() * 6 + 3;
     p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${Math.random()*4+3}s;animation-delay:${Math.random()*2}s;`;
     parts.appendChild(p);
   }
+
+  // Binary chars
   '010110100110010101001011001111000101101'.split('').forEach((c, i) => {
     const el = document.createElement('span');
     el.className = 'intro-char';
@@ -608,7 +610,32 @@ function initIntro() {
     el.style.background = i % 2 === 0 ? 'var(--accent)' : 'var(--accent3)';
     document.getElementById('introChars').appendChild(el);
   });
+
+  // Status cycle
+  const statusMessages = [
+    'Initializing AI core...',
+    'Loading persona modules...',
+    'Connecting Overchat proxy...',
+    'Anti-jailbreak active...',
+    'Voice engine ready...',
+    'System online — Welcome! ✓'
+  ];
+  const statEl = document.getElementById('istat1');
+  let si = 0;
+  const statInterval = setInterval(() => {
+    si++;
+    if (si >= statusMessages.length) { clearInterval(statInterval); return; }
+    if (statEl) {
+      statEl.style.opacity = '0';
+      setTimeout(() => {
+        statEl.textContent = statusMessages[si];
+        statEl.style.opacity = '1';
+      }, 150);
+    }
+  }, 400);
+
   setTimeout(() => {
+    clearInterval(statInterval);
     const ov = document.getElementById('introOverlay');
     ov.classList.add('hidden');
     setTimeout(() => ov.remove(), 700);
@@ -799,6 +826,7 @@ function navTo(page, el) {
    INIT
 ================================================================ */
 window.addEventListener('DOMContentLoaded', () => {
+  HC_CONSOLE.init();
   initIntro();
   applyConfig();
   renderUpdate();
@@ -848,13 +876,14 @@ function closeBetaOverlay() {
 }
 
 /* ================================================================
-   AD OVERLAY
+   AD OVERLAY — tengah layar, tanpa X, countdown next
 ================================================================ */
 let adIndex = 0;
 let adAutoTimer = null;
+let adNextCountdown = 0;
+let adNextTimer = null;
 
 function initAdOverlay() {
-  // Ambil config dari iklan.js (IKLAN_CFG). Kalau SHOW_ADS false → iklan tidak tampil.
   const iklanCfg = (typeof IKLAN_CFG !== 'undefined') ? IKLAN_CFG : null;
   const adsArr = iklanCfg ? iklanCfg.ADS_LIST : (CFG.ADS || []);
   const showAds = iklanCfg ? iklanCfg.SHOW_ADS : true;
@@ -865,9 +894,11 @@ function initAdOverlay() {
   const adInterval = iklanCfg ? iklanCfg.AD_AUTO_INTERVAL_MS : (CFG.AD_AUTO_INTERVAL_MS || 5000);
   const delay = (CFG.SHOW_BETA ? 3200 + 1000 : 0) + adDelay;
   setTimeout(() => {
+    adIndex = 0;
     renderAd(0);
     const ov = document.getElementById('adOverlay');
     if (ov) ov.classList.add('show');
+    HC_CONSOLE.log('AI', `Ad overlay shown (${adsArr.length} ad${adsArr.length>1?'s':''})`);
     if (adInterval > 0 && adsArr.length > 1) {
       adAutoTimer = setInterval(() => {
         adIndex = (adIndex + 1) % adsArr.length;
@@ -908,19 +939,104 @@ function renderAd(idx) {
     <div class="ad-cta-row">${ctaBtns}</div>
   `;
 
-  // nav row (prev/next) — hanya kalau lebih dari 1 iklan
+  // Nav row — hanya kalau lebih dari 1 iklan, TANPA tombol X
+  // Tombol Next: iklan pertama langsung bisa diklik (no countdown),
+  // countdown baru muncul mulai iklan ke-2 (idx >= 1)
   const navRow = document.getElementById('adNavRow');
   const dotsRow = document.getElementById('adDots');
   if (ads.length > 1) {
-    navRow.innerHTML = `
-      <button class="ad-nav-btn" onclick="prevAd()">◀ Prev</button>
-      <span class="ad-counter">${idx + 1} / ${ads.length}</span>
-      <button class="ad-nav-btn" onclick="nextAd()">Next ▶</button>`;
+    const cdSec = (iklanCfg && iklanCfg.AD_NEXT_COUNTDOWN_SEC) ? iklanCfg.AD_NEXT_COUNTDOWN_SEC : 3;
+    const isFirstAd = (idx === 0);
+    if (isFirstAd) {
+      // Iklan pertama: Next langsung aktif, tidak ada countdown
+      navRow.innerHTML = `
+        <button class="ad-nav-btn" onclick="prevAd()">◀ Prev</button>
+        <span class="ad-counter">${idx + 1} / ${ads.length}</span>
+        <button class="ad-nav-btn ready" id="adNextBtn" onclick="nextAd()">Next ▶</button>`;
+    } else if (adIndex === ads.length - 1) {
+      // Iklan terakhir: tampilkan tombol Tutup dengan countdown
+      navRow.innerHTML = `
+        <button class="ad-nav-btn" onclick="prevAd()">◀ Prev</button>
+        <span class="ad-counter">${idx + 1} / ${ads.length}</span>
+        <button class="ad-nav-btn ad-close-countdown-btn" id="adNextBtn" disabled>Tutup (${cdSec}s)</button>`;
+      _startCloseCountdownAsNext(cdSec);
+    } else {
+      // Iklan ke-2 dst (bukan terakhir): Next dengan countdown
+      navRow.innerHTML = `
+        <button class="ad-nav-btn" onclick="prevAd()">◀ Prev</button>
+        <span class="ad-counter">${idx + 1} / ${ads.length}</span>
+        <button class="ad-nav-btn ad-next-btn" id="adNextBtn" disabled>Next (${cdSec}s)</button>`;
+      _startNextCountdown(cdSec);
+    }
     dotsRow.innerHTML = ads.map((_, i) => `<div class="ad-dot ${i === idx ? 'active' : ''}" onclick="renderAd(${i})"></div>`).join('');
   } else {
-    navRow.innerHTML = '';
+    // Single ad — show a "Tutup (3s)" button instead of X
+    const cdSec = (iklanCfg && iklanCfg.AD_NEXT_COUNTDOWN_SEC) ? iklanCfg.AD_NEXT_COUNTDOWN_SEC : 3;
+    navRow.innerHTML = `
+      <span class="ad-counter" style="flex:1;text-align:left">📣 Promo</span>
+      <button class="ad-nav-btn ad-close-countdown-btn" id="adCloseCountBtn" disabled>Tutup (${cdSec}s)</button>`;
     dotsRow.innerHTML = '';
+    _startCloseCountdown(cdSec);
   }
+}
+
+function _startCloseCountdownAsNext(sec) {
+  if (adNextTimer) clearInterval(adNextTimer);
+  let remaining = sec;
+  adNextTimer = setInterval(() => {
+    remaining--;
+    const b = document.getElementById('adNextBtn');
+    if (!b) { clearInterval(adNextTimer); return; }
+    if (remaining <= 0) {
+      clearInterval(adNextTimer);
+      b.disabled = false;
+      b.textContent = 'Tutup ✕';
+      b.classList.add('ready');
+      b.onclick = closeAdOverlay;
+    } else {
+      b.textContent = `Tutup (${remaining}s)`;
+    }
+  }, 1000);
+}
+
+function _startNextCountdown(sec) {
+  if (adNextTimer) clearInterval(adNextTimer);
+  let remaining = sec;
+  const btn = document.getElementById('adNextBtn');
+  if (!btn) return;
+  adNextTimer = setInterval(() => {
+    remaining--;
+    const b = document.getElementById('adNextBtn');
+    if (!b) { clearInterval(adNextTimer); return; }
+    if (remaining <= 0) {
+      clearInterval(adNextTimer);
+      b.disabled = false;
+      b.textContent = 'Next ▶';
+      b.classList.add('ready');
+      b.onclick = nextAd;
+    } else {
+      b.textContent = `Next (${remaining}s)`;
+    }
+  }, 1000);
+}
+
+function _startCloseCountdown(sec) {
+  if (adNextTimer) clearInterval(adNextTimer);
+  let remaining = sec;
+  adNextTimer = setInterval(() => {
+    remaining--;
+    const b = document.getElementById('adCloseCountBtn');
+    if (!b) { clearInterval(adNextTimer); return; }
+    if (remaining <= 0) {
+      clearInterval(adNextTimer);
+      b.disabled = false;
+      b.textContent = 'Tutup ✕';
+      b.classList.add('ready');
+      b.onclick = closeAdOverlay;
+    } else {
+      b.textContent = `Tutup (${remaining}s)`;
+    }
+  }, 1000);
 }
 
 function prevAd() {
@@ -939,11 +1055,12 @@ function nextAd() {
 }
 function closeAdOverlay() {
   if (adAutoTimer) clearInterval(adAutoTimer);
+  if (adNextTimer) clearInterval(adNextTimer);
   const ov = document.getElementById('adOverlay');
   if (!ov) return;
   ov.style.opacity = '0';
   ov.style.transition = 'opacity .3s ease, transform .3s ease';
-  ov.style.transform = 'translateY(40px)';
+  ov.style.transform = 'scale(0.92)';
   setTimeout(() => {
     ov.classList.remove('show');
     ov.style.opacity = '';
@@ -951,6 +1068,7 @@ function closeAdOverlay() {
     ov.style.transition = '';
   }, 320);
   sessionStorage.setItem('hc_ad_seen', '1');
+  HC_CONSOLE.log('AI', 'Ad overlay closed by user');
 }
 
 /* ================================================================
@@ -1243,13 +1361,146 @@ function deleteSaved(id) {
 }
 
 /* ================================================================
+   CONSOLE LOGGER — Terminal AI Activity
+================================================================ */
+const HC_CONSOLE = {
+  el: null,
+  visible: false,
+  lines: [],
+  maxLines: 80,
+  _frames: ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'],
+  _spinIdx: 0,
+  _spinInterval: null,
+  _spinEl: null,
+
+  init() {
+    // Create console panel
+    const panel = document.createElement('div');
+    panel.id = 'hcConsole';
+    panel.innerHTML = `
+      <div class="hcc-bar">
+        <div class="hcc-dots"><span class="hcc-dot r"></span><span class="hcc-dot y"></span><span class="hcc-dot g" onclick="HC_CONSOLE.clear()"></span></div>
+        <span class="hcc-title"><span class="hcc-title-icon">◈</span> HANAMORI CALYX — AI TERMINAL</span>
+        <div class="hcc-bar-right">
+          <span class="hcc-status-dot" id="hccStatusDot"></span>
+          <span class="hcc-status-txt" id="hccStatusTxt">IDLE</span>
+          <button class="hcc-close" onclick="HC_CONSOLE.toggle()">✕</button>
+        </div>
+      </div>
+      <div class="hcc-body" id="hccBody"></div>
+      <div class="hcc-footer">
+        <span class="hcc-footer-txt">HANAMORI CALYX AI v5.0 &nbsp;|&nbsp; Overchat Proxy Active &nbsp;|&nbsp; <span id="hccLineCount">0</span> lines</span>
+        <button class="hcc-clear-btn" onclick="HC_CONSOLE.clear()">CLR</button>
+      </div>
+    `;
+    panel.style.display = 'none';
+    document.body.appendChild(panel);
+    this.el = panel;
+
+    // Toggle button sudah ada inline di attach-row (index.html)
+    // Tidak perlu append ke body
+
+    this.log('SYS', 'HANAMORI CALYX AI v5.0 booting...');
+    this.log('SYS', 'Overchat proxy initialized');
+    this.log('SYS', 'Voice engine: Web Speech API (id-ID)');
+    this.log('SYS', 'Anti-jailbreak module: ACTIVE');
+    this.log('OK',  'System ready ✓');
+  },
+
+  log(type, msg, extra) {
+    const time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const entry = { type, msg, time, extra };
+    this.lines.push(entry);
+    if (this.lines.length > this.maxLines) this.lines.shift();
+    this._renderLine(entry);
+    // Update badge
+    const badge = document.getElementById('hctbBadge');
+    if (badge) badge.textContent = this.lines.length;
+    const lc = document.getElementById('hccLineCount');
+    if (lc) lc.textContent = this.lines.length;
+  },
+
+  _renderLine(entry) {
+    const body = document.getElementById('hccBody');
+    if (!body) return;
+    const colors = {
+      SYS:'#64748b', OK:'#10b981', SEND:'#00d4ff', RECV:'#a78bfa',
+      AI:'#fbbf24', ERR:'#ff4d6d', WARN:'#f59e0b', NET:'#38bdf8',
+      VOICE:'#34d399', THINK:'#c084fc', DONE:'#10b981'
+    };
+    const prefixes = {
+      SYS:'[SYS] ', OK:'[ OK] ', SEND:'[>>>] ', RECV:'[<<<] ',
+      AI:'[ AI] ', ERR:'[ERR] ', WARN:'[WRN] ', NET:'[NET] ',
+      VOICE:'[MIC] ', THINK:'[···] ', DONE:'[✓··] '
+    };
+    const color = colors[entry.type] || '#94a3b8';
+    const prefix = prefixes[entry.type] || '[   ] ';
+    const line = document.createElement('div');
+    line.className = 'hcc-line';
+    line.innerHTML = `<span class="hcc-time">${entry.time}</span><span class="hcc-prefix" style="color:${color}">${prefix}</span><span class="hcc-msg">${entry.msg}</span>${entry.extra ? `<span class="hcc-extra">${entry.extra}</span>` : ''}`;
+    body.appendChild(line);
+    body.scrollTop = body.scrollHeight;
+  },
+
+  startSpinner(msg) {
+    this.stopSpinner();
+    this.log('THINK', msg || 'Processing...');
+    const body = document.getElementById('hccBody');
+    if (!body) return;
+    const spinLine = document.createElement('div');
+    spinLine.className = 'hcc-line hcc-spin-line';
+    spinLine.id = 'hccSpinLine';
+    spinLine.innerHTML = `<span class="hcc-time">${new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span><span class="hcc-prefix" style="color:#c084fc" id="hccSpinFrame">${this._frames[0]}</span><span class="hcc-msg hcc-spin-msg" id="hccSpinMsg">${msg||'Waiting for AI response...'}</span>`;
+    body.appendChild(spinLine);
+    body.scrollTop = body.scrollHeight;
+    this._spinInterval = setInterval(() => {
+      this._spinIdx = (this._spinIdx + 1) % this._frames.length;
+      const el = document.getElementById('hccSpinFrame');
+      if (el) el.textContent = this._frames[this._spinIdx];
+    }, 80);
+    // Status
+    const sd = document.getElementById('hccStatusDot');
+    const st = document.getElementById('hccStatusTxt');
+    if (sd) sd.classList.add('active');
+    if (st) st.textContent = 'THINKING';
+  },
+
+  stopSpinner(doneMsg) {
+    if (this._spinInterval) { clearInterval(this._spinInterval); this._spinInterval = null; }
+    const el = document.getElementById('hccSpinLine');
+    if (el) el.remove();
+    if (doneMsg) this.log('DONE', doneMsg);
+    const sd = document.getElementById('hccStatusDot');
+    const st = document.getElementById('hccStatusTxt');
+    if (sd) sd.classList.remove('active');
+    if (st) st.textContent = 'IDLE';
+  },
+
+  toggle() {
+    this.visible = !this.visible;
+    if (this.el) this.el.style.display = this.visible ? 'flex' : 'none';
+  },
+
+  clear() {
+    this.lines = [];
+    const body = document.getElementById('hccBody');
+    if (body) body.innerHTML = '';
+    const lc = document.getElementById('hccLineCount');
+    if (lc) lc.textContent = '0';
+    const badge = document.getElementById('hctbBadge');
+    if (badge) badge.textContent = '0';
+    this.log('SYS', 'Console cleared');
+  }
+};
+
+/* ================================================================
    VOICE INPUT
 ================================================================ */
 let recognition = null;
 let isRecording = false;
 function initVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { document.getElementById('voiceBtn').style.display = 'none'; return; }
+  if (!SR) { document.getElementById('voiceBtn').style.display = 'none'; HC_CONSOLE.log('WARN','Voice: Web Speech API not supported'); return; }
   recognition = new SR();
   recognition.lang = 'id-ID';
   recognition.continuous = false;
@@ -1258,6 +1509,7 @@ function initVoice() {
     isRecording = true;
     document.getElementById('voiceBtn').classList.add('recording');
     document.getElementById('voiceIndicator').classList.add('active');
+    HC_CONSOLE.log('VOICE', 'Microphone started — listening (id-ID)');
   };
   recognition.onresult = (e) => {
     let final = '', interim = '';
@@ -1265,27 +1517,47 @@ function initVoice() {
       if (e.results[i].isFinal) final += e.results[i][0].transcript;
       else interim += e.results[i][0].transcript;
     }
-    document.getElementById('promptInput').value = final || interim;
+    const text = final || interim;
+    document.getElementById('promptInput').value = text;
+    if (final) HC_CONSOLE.log('VOICE', `Transcript final: "${final.slice(0,60)}${final.length>60?'...':''}"`);
+    // Auto-resize textarea
+    const ta = document.getElementById('promptInput');
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
   };
   recognition.onend = () => {
     isRecording = false;
     document.getElementById('voiceBtn').classList.remove('recording');
     document.getElementById('voiceIndicator').classList.remove('active');
     const val = document.getElementById('promptInput').value.trim();
-    if (val) setTimeout(() => sendMessage(), 300);
+    HC_CONSOLE.log('VOICE', val ? `Recording ended — text ready: "${val.slice(0,40)}..."` : 'Recording ended — no speech detected');
+    // Tampilkan hint kirim (TIDAK auto-send, user harus tekan kirim sendiri)
+    if (val) {
+      showToast('🎤 Teks siap — tekan ➤ untuk kirim!');
+      document.getElementById('promptInput').focus();
+    }
   };
   recognition.onerror = (e) => {
     isRecording = false;
     document.getElementById('voiceBtn').classList.remove('recording');
     document.getElementById('voiceIndicator').classList.remove('active');
+    HC_CONSOLE.log('ERR', `Voice error: ${e.error}`);
     if (e.error === 'not-allowed') showToast('❌ Izinkan akses mikrofon!');
     else if (e.error === 'no-speech') showToast('🎤 Tidak ada suara terdeteksi');
+    else showToast('❌ Voice error: ' + e.error);
   };
+  HC_CONSOLE.log('VOICE', 'Web Speech API initialized (id-ID)');
 }
 function toggleVoice() {
   if (!recognition) { showToast('❌ Browser tidak support voice'); return; }
-  if (isRecording) { recognition.stop(); }
-  else { document.getElementById('promptInput').value = ''; try { recognition.start(); } catch(e) { showToast('❌ ' + e.message); } }
+  if (isRecording) {
+    recognition.stop();
+    HC_CONSOLE.log('VOICE', 'User stopped recording');
+  } else {
+    document.getElementById('promptInput').value = '';
+    try { recognition.start(); }
+    catch(e) { showToast('❌ ' + e.message); HC_CONSOLE.log('ERR', 'Voice start error: ' + e.message); }
+  }
 }
 
 /* ================================================================
@@ -1766,15 +2038,22 @@ async function sendMessage() {
   if (!prompt && !pendingAttach) return;
   if (isJailbreak(prompt)) {
     inp.value = ''; addMsg('user', esc(prompt));
+    HC_CONSOLE.log('WARN', 'Jailbreak attempt blocked: ' + prompt.slice(0,40));
     setTimeout(() => addMsg('ai', getJailbreakReply()), 400); return;
   }
   if (isBanned(prompt)) {
     inp.value = ''; addMsg('user', esc(prompt));
+    HC_CONSOLE.log('WARN', 'Banned pattern blocked: ' + prompt.slice(0,40));
     setTimeout(() => addMsg('ai', getBannedReply()), 400); return;
   }
   isLoading = true; inp.value = '';
+  inp.style.height = 'auto';
   document.getElementById('sendBtn').disabled = true;
   document.getElementById('drawerStatus').textContent = 'AI sedang berpikir...';
+
+  HC_CONSOLE.log('SEND', `User: "${prompt.slice(0,60)}${prompt.length>60?'...':''}"`);
+  HC_CONSOLE.log('NET',  `POST /api/chat — model: ${typeof MODEL !== 'undefined' ? MODEL : 'overchat'}`);
+
   if (pendingAttach && prompt) addMsg('user', pendingAttach.html + `<div style="margin-top:6px;font-size:.8rem;line-height:1.5">${esc(prompt)}</div>`);
   else if (pendingAttach) addMsg('user', pendingAttach.html);
   else addMsg('user', esc(prompt));
@@ -1788,10 +2067,13 @@ async function sendMessage() {
       const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
       userContent.push({ type: 'image_url', image_url: { url: `data:${mime};base64,${base64}` } });
       fileContext = `[FOTO DIKIRIM: "${pendingAttach.name}". Tolong analisis foto ini secara DETAIL — deskripsikan apa yang kamu lihat, warna, objek, teks, konteks, dan bantu sesuai pertanyaan user. Jangan bilang kamu tidak bisa lihat gambar!]\n`;
+      HC_CONSOLE.log('NET', `Attach image: ${pendingAttach.name} (${pendingAttach.size})`);
     } else if (pendingAttach.type === 'video') {
       fileContext = `[VIDEO DIKIRIM: "${pendingAttach.name}" (${pendingAttach.size}). Kamu tidak bisa memutar video langsung, tapi bantu user berdasarkan konteks yang mereka berikan. Tanya kalau perlu info lebih.]\n`;
+      HC_CONSOLE.log('NET', `Attach video: ${pendingAttach.name}`);
     } else if (pendingAttach.type === 'file') {
       fileContext = `[FILE DIKIRIM: "${pendingAttach.name}" (${pendingAttach.size}). Bantu user dengan file ini. Kalau code file: bantu analisis/perbaiki. Kalau dokumen: bantu sesuai kebutuhan user.]\n`;
+      HC_CONSOLE.log('NET', `Attach file: ${pendingAttach.name}`);
     }
   }
   const textPart = (fileContext + (prompt || 'Tolong analisis ini secara detail.')).trim();
@@ -1799,11 +2081,12 @@ async function sendMessage() {
   clearPendingAttach();
   chatHistory.push({ role: 'user', content: userContent.length === 1 ? textPart : userContent });
   if (chatHistory.length > 30) chatHistory = chatHistory.slice(chatHistory.length - 30);
+
+  HC_CONSOLE.startSpinner('Menunggu respons AI dari Overchat...');
   addTyping(prompt);
   try {
     let reply = '';
 
-    /* ══ PROXY API — lewat /api/chat Vercel ══ */
     const allMessages = [
       { role: 'system', content: SYSTEM },
       ...chatHistory.map(m => ({
@@ -1818,13 +2101,19 @@ async function sendMessage() {
       deviceId: _overchatSession.deviceId,
     };
 
+    HC_CONSOLE.log('NET', `Sending ${allMessages.length} messages (history: ${chatHistory.length})`);
+
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(proxyBody),
     });
 
+    HC_CONSOLE.log('NET', `Response status: HTTP ${res.status}`);
+
     if (!res.ok) {
+      HC_CONSOLE.stopSpinner();
+      HC_CONSOLE.log('ERR', `API error: HTTP ${res.status}`);
       removeTyping();
       const errData = await res.json().catch(() => ({}));
       addMsg('ai', `❌ Error: ${errData?.error?.message || 'HTTP ' + res.status}`);
@@ -1835,7 +2124,6 @@ async function sendMessage() {
       return;
     }
 
-    // Baca response JSON dari proxy (bukan stream langsung)
     removeTyping();
     addMsg('ai', '');
     const streamEl = document.querySelector('#chatMessages .message.ai:last-child .bubble');
@@ -1843,7 +2131,17 @@ async function sendMessage() {
     const data = await res.json();
     reply = data?.choices?.[0]?.message?.content || '';
 
+    HC_CONSOLE.stopSpinner(`AI responded — ${reply.length} chars`);
+    HC_CONSOLE.log('RECV', `"${reply.slice(0,80).replace(/\n/g,' ')}${reply.length>80?'...':''}"`);
+
     chatHistory.push({ role: 'assistant', content: reply });
+
+    // Detect code blocks
+    const codeMatches = [...(reply.matchAll(/```(\w+)/g))];
+    if (codeMatches.length > 0) {
+      HC_CONSOLE.log('AI', `Code blocks detected: ${codeMatches.map(m=>m[1]).join(', ')}`);
+    }
+
     /* ══ DETECT MULTI-SCRIPT ══ */
     const multiPattern = /\[SCRIPT\s*\d+:\s*([^\]]+)\]\s*```(\w+)\n?([\s\S]*?)```/gi;
     const multiMatches = [...reply.matchAll(multiPattern)];
@@ -1858,6 +2156,7 @@ async function sendMessage() {
         const fname = sname.replace(/[^a-z0-9]/gi,'_').toLowerCase() + '.' + li.ext;
         currentScripts.push({ name:fname, displayName:sname, code, lang, ext:li.ext, label:li.label });
       }
+      HC_CONSOLE.log('AI', `Multi-script detected: ${currentScripts.length} files`);
       activeScriptIdx = 0;
       const first = currentScripts[0];
       currentCode = first.code; currentLang = first.lang;
@@ -1892,11 +2191,13 @@ async function sendMessage() {
         activeScriptIdx = 0;
         document.getElementById('filename').textContent = fname;
         document.getElementById('langLabel').textContent = matched.label;
+        HC_CONSOLE.log('AI', `Single script: ${matched.label} (${matched.code.split('\n').length} lines)`);
         const fp = document.getElementById('floatPrevBtn');
         if (fp) fp.style.display = (matched.lang === 'html') ? 'inline-flex' : 'none';
         showToast('✅ Script ' + matched.label + ' siap!');
       } else {
         currentScripts = [];
+        HC_CONSOLE.log('AI', 'No code block in response (text only)');
         const fp = document.getElementById('floatPrevBtn');
         if (fp) fp.style.display = 'none';
       }
@@ -1904,7 +2205,6 @@ async function sendMessage() {
     // Update streaming bubble dengan final rendered content
     if (streamEl) {
       streamEl.innerHTML = `<div class="ai-name-badge">HANAMORI CALYX ${VERIFIED_BADGE_SVG}</div>` + renderMarkdown(reply) + `<span class="msg-time">${getTime()}</span>`;
-      // Re-attach copy button
       const tempDiv2 = document.createElement('div');
       tempDiv2.innerHTML = reply;
       const plainText2 = tempDiv2.innerText || tempDiv2.textContent || '';
@@ -1920,8 +2220,11 @@ async function sendMessage() {
       };
       streamEl.appendChild(copyBtn2);
     }
+    HC_CONSOLE.log('OK', 'Message rendered successfully');
     saveCurrentChat(prompt.slice(0, 40));
   } catch(err) {
+    HC_CONSOLE.stopSpinner();
+    HC_CONSOLE.log('ERR', `Exception: ${err.message}`);
     removeTyping();
     addMsg('ai', `❌ Gagal: ${esc(err.message)}`);
     chatHistory.pop();
