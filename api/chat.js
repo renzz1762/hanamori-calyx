@@ -6,9 +6,9 @@ const crypto = require("node:crypto");
 //   Model: claude-haiku-4-5-20251001
 // ================================================================
 
-const API     = "https://api.overchat.ai/v1/chat/completions";
-const MODEL   = "claude-haiku-4-5-20251001";
-const PERSONA = "claude-haiku-4-5-landing";
+const API     = process.env.OVERCHAT_API_URL;
+const MODEL   = process.env.OVERCHAT_MODEL;
+const PERSONA = process.env.OVERCHAT_PERSONA;
 const UA      = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
 function makeHeaders(deviceId) {
