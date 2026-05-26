@@ -3,14 +3,13 @@ const crypto = require("node:crypto");
 // ================================================================
 //   HANAMORI CALYX AI — chat.js
 //   API  : Overchat (https://overchat.ai)
-//   Model: alibaba/qwen3-next-80b-a3b-instruct
+//   Model: claude-haiku-4-5-20251001
 // ================================================================
 
-// SESUDAH
-const API     = process.env.OVERCHAT_API_URL;
-const MODEL   = process.env.OVERCHAT_MODEL;
-const PERSONA = process.env.OVERCHAT_PERSONA;
-const UA       = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
+const API     = "https://api.overchat.ai/v1/chat/completions";
+const MODEL   = "claude-haiku-4-5-20251001";
+const PERSONA = "claude-haiku-4-5-landing";
+const UA      = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
 function makeHeaders(deviceId) {
   return {
@@ -26,7 +25,7 @@ function makeHeaders(deviceId) {
     "content-type":       "application/json",
     origin:               "https://overchat.ai",
     referer:              "https://overchat.ai/",
-    "accept-language":    "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    "accept-language":    "id-ID,id;q=0.9",
     priority:             "u=1, i",
   };
 }
