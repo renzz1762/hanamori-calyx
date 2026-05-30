@@ -19,16 +19,7 @@ const IKLAN_CFG = {
   AD_NEXT_COUNTDOWN_SEC: 3,
 
   ADS_LIST: [
-    {
-      type: "text",
-      title: "🔥 Follow TikTok Gue!",
-      text: "Konten script Roblox, tips coding, dan info update HANAMORI CALYX AI setiap hari. Jangan ketinggalan bro!",
-      media_url: "",
-      cta_buttons: [
-        { type: "tt", url: "https://tiktok.com/@renzzzzofc18", label: "Follow TikTok" },
-        { type: "wa", url: "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A", label: "Join WA Channel" },
-      ]
-    },
+
     // ─── TAMBAH IKLAN BARU DI SINI ───
     // {
     //   type: "image",
