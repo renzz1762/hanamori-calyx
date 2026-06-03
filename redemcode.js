@@ -31,10 +31,10 @@ const REDEEM_CODES = {
     expires: null,
   },
 
-  "HCWELCOME": {
+  "HC6822026": {
     active : true,
     type   : "free",
-    desc   : "Welcome Pack — Hadiah selamat datang untuk member baru.",
+    desc   : "SCRIPT PULAU APUNG HASIL REMAKE",
     expires: null,
   },
 
