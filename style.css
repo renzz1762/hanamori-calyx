@@ -4,10 +4,22 @@
   --accent3:#7c3aed;--text:#e2e8f0;--muted:#64748b;
   --success:#10b981;--glow:0 0 20px rgba(0,212,255,0.3);
 }
+
+/* ══ VIEWPORT FIX — Auto resize yang bener di semua device/DPI ══
+   Pakai clamp() di root font-size agar semua rem unit ikut scale.
+   min: 12px (HP kecil), preferred: 2.5vmin, max: 16px (PC/laptop).
+   vmin = terkecil dari vw/vh — cocok utk landscape & portrait.
+*/
+html{
+  font-size: clamp(12px, 2.5vmin, 16px);
+  height: -webkit-fill-available;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden}
-html{height:-webkit-fill-available}
-body{min-height:-webkit-fill-available}
+body{min-height:-webkit-fill-available;min-height:100dvh}
 
 /* ══ INTRO ══ */
 #introOverlay{position:fixed;inset:0;z-index:99999;background:#06080f;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
@@ -98,8 +110,29 @@ body{min-height:-webkit-fill-available}
 .maint-soc-btn.dc{border-color:rgba(88,101,242,.5);color:#5865f2}
 .maint-soc-btn.dc:hover{background:rgba(88,101,242,.15)}
 
+/* ══ STEPS PANEL — Ringkasan Modal ══ */
+#stepsPanel{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9998;pointer-events:none}
+.steps-backdrop{position:absolute;inset:0;background:rgba(6,8,15,0.4);backdrop-filter:blur(2px);opacity:0;transition:opacity .3s;pointer-events:none}
+.steps-backdrop.show{opacity:1;pointer-events:auto}
+.steps-sheet{position:absolute;bottom:-100%;left:0;right:0;max-height:70vh;background:var(--surface);border-top:1px solid var(--border);border-radius:1.5rem 1.5rem 0 0;display:flex;flex-direction:column;transition:bottom .4s cubic-bezier(.34,.1,.68,.55);pointer-events:auto;box-shadow:0 -8px 32px rgba(0,0,0,.5)}
+.steps-sheet.open{bottom:0}
+.steps-handle{width:2.5rem;height:.375rem;background:var(--border);border-radius:.25rem;margin:.75rem auto;flex-shrink:0}
+.steps-header{display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.steps-header-left{display:flex;align-items:center;gap:.75rem;font-weight:600;color:var(--accent)}
+.steps-spinner{display:inline-block;font-size:1.25rem;animation:spin 2s linear infinite}
+.steps-spinner.spinning{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.steps-title{font-size:1.1rem;font-weight:600;color:var(--text)}
+.steps-close{background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:.25rem;transition:color .2s}
+.steps-close:hover{color:var(--accent)}
+.steps-list{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.steps-item{display:flex;align-items:flex-start;gap:.75rem;animation:slideIn .3s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(-1rem)}to{opacity:1;transform:translateX(0)}}
+.steps-item-icon{font-size:1.25rem;flex-shrink:0;min-width:1.5rem;text-align:center}
+.steps-item-text{color:var(--text);font-size:.95rem;line-height:1.4;word-break:break-word}
+
 /* ══ APP ══ */
-.app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;max-width:100vw}
 
 /* ══ HEADER ══ */
 header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:rgba(13,18,33,.97);backdrop-filter:blur(12px);flex-shrink:0;z-index:50}
