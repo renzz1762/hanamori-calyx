@@ -62,7 +62,7 @@ const CFG = {
    *
    * MATIIN MAINTENANCE: kosongkan MAINTENANCE_TEXT
    */
-  MAINTENANCE_TEXT: "",
+  MAINTENANCE_TEXT: "sabar yah guys,lagi update & fix beberapa bug",
   MAINTENANCE_MODE: "manual",       // "auto" = dengan timer | "manual" = sampai dimatiin manual
   MAINTENANCE_DURATION_HOURS: 2,
   MAINTENANCE_START: "",
