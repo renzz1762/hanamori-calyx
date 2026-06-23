@@ -112,22 +112,26 @@
   </div>
 </div>
 
-<!-- ══ BETA OVERLAY ══ -->
+<!-- ══ BETA OVERLAY — OCEAN REDESIGN ══ -->
 <div id="betaOverlay">
   <div class="beta-box">
     <button class="beta-close-btn" onclick="closeBetaOverlay()" title="Tutup">✕</button>
-    <div class="beta-icon">🧪</div>
+    <!-- Ocean bubble decorations -->
+    <div style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,255,.15),transparent 70%);pointer-events:none"></div>
+    <div style="position:absolute;bottom:20px;right:-10px;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(0,150,200,.1),transparent 70%);pointer-events:none"></div>
+    <div class="beta-icon">🌊</div>
     <div class="beta-title">BETA TESTING</div>
-    <div class="beta-sub">◈ VERSI PERCOBAAN ◈</div>
+    <div class="beta-sub">◈ HC COMMUNITY v5.0 ◈</div>
     <div class="beta-desc">
-      Website ini masih dalam tahap <strong>Beta Testing</strong> — fitur masih terus dikembangkan dan mungkin ada bug. Terima kasih sudah mencoba! 🙏
+      Website ini masih dalam tahap <strong style="color:#00e5ff">Beta Testing</strong> — fitur terus dikembangkan setiap saat. Ada bug? Kabarin dev ya! Makasih udah jadi bagian dari <strong style="color:#00c8ff">HC Community</strong> 🙏
     </div>
     <div class="beta-badges">
+      <span class="beta-badge">🌊 Ocean Update</span>
       <span class="beta-badge">⚡ Aktif Dikembangkan</span>
       <span class="beta-badge">🐛 Bug Mungkin Ada</span>
       <span class="beta-badge">🔥 Fitur Baru Segera</span>
     </div>
-    <button class="beta-ok-btn" onclick="closeBetaOverlay()">Mengerti, Lanjut! 🚀</button>
+    <button class="beta-ok-btn" onclick="closeBetaOverlay()">Siap, Gas! 🌊🚀</button>
   </div>
 </div>
 
@@ -228,7 +232,7 @@
         <img id="headerLogoImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px;">
       </div>
       <div>
-        <div class="logo-text">HANAMORI CALYX AI</div>
+        <div class="logo-text">HC COMMUNITY</div>
         <div class="logo-sub">v5.0 Roblox Expert • Anti-Jailbreak • Smart</div>
       </div>
     </div>
@@ -246,16 +250,47 @@
       <div class="home-grid">
         <!-- Chat Panel -->
         <div class="left-panel">
-          <div class="panel-header">
-            <div class="panel-icon blue">💬</div>
-            <span class="panel-title">AI Chat</span>
-            <button id="floatPrevBtn" onclick="openPreview()" style="display:none;padding:4px 10px;border-radius:7px;font-size:.6rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.08);color:#10b981;cursor:pointer;flex-shrink:0" title="Preview HTML">🌐 Preview</button>
-            <button id="redeemHeaderBtn" onclick="openRedeem()" title="Code Redeem" style="display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:7px;font-size:.6rem;font-family:'Share Tech Mono',monospace;border:1px solid rgba(124,58,237,.5);background:rgba(124,58,237,.08);color:#a78bfa;cursor:pointer;flex-shrink:0;transition:all .2s">🎁 <span>Redeem</span></button>
-            <div class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
-              <span></span><span></span><span></span>
+          <!-- ══ FIZZ-STYLE HEADER ══ -->
+          <div class="fz-header">
+            <div class="fz-header-left">
+              <div class="fz-logo-box">HC</div>
+              <div class="fz-header-titles">
+                <span class="fz-header-name"><span class="fz-accent">HANAMORI</span> CALYX AI</span>
+                <span class="fz-header-sub">v5.0 • Roblox Expert</span>
+              </div>
+            </div>
+            <div class="fz-header-right">
+              <button id="floatPrevBtn" onclick="openPreview()" style="display:none" class="fz-hbtn fz-hbtn-green">🌐 Preview</button>
+              <button onclick="openRedeem()" class="fz-hbtn fz-hbtn-purple">🎁 Redeem</button>
+              <div class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
+                <span></span><span></span><span></span>
+              </div>
             </div>
           </div>
-          <div class="chat-messages" id="chatMessages">
+
+          <!-- ══ WELCOME SCREEN (shown when no chat yet) ══ -->
+          <div class="fz-welcome" id="fzWelcome">
+            <div class="fz-welcome-logo">HC</div>
+            <h1 class="fz-welcome-title"><span class="fz-accent">HANAMORI</span> CALYX AI</h1>
+            <p class="fz-welcome-desc">Asisten AI cerdas oleh <span class="fz-accent">Renzzz</span>. Bisa chat, kirim gambar, script Roblox, dan banyak lagi.</p>
+            <div class="fz-quick-grid">
+              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan script Fly GUI Roblox Studio dengan toggle button yang keren')">
+                <i class="fa-solid fa-plane fz-quick-icon"></i><span>Script Fly Roblox</span>
+              </button>
+              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan website landing page keren dengan HTML CSS JS animasi')">
+                <i class="fa-solid fa-globe fz-quick-icon"></i><span>Website Keren</span>
+              </button>
+              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan Chat Tag GUI untuk Roblox Studio dengan warna kustom')">
+                <i class="fa-solid fa-comment fz-quick-icon"></i><span>Chat Tag Roblox</span>
+              </button>
+              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan script Admin Panel Roblox Studio lengkap dengan kick, ban, speed')">
+                <i class="fa-solid fa-shield fz-quick-icon"></i><span>Admin Panel</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ══ CHAT MESSAGES ══ -->
+          <div class="chat-messages" id="chatMessages" style="display:none">
             <div class="message ai">
               <div class="avatar ai">
                 <img id="aiAvatarWelcomeImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;">
@@ -271,34 +306,52 @@
               </div>
             </div>
           </div>
-          <div class="input-area">
+
+          <!-- ══ FIZZ-STYLE INPUT AREA ══ -->
+          <div class="fz-input-area">
             <input type="file" id="inputImage" accept="image/*" style="display:none" onchange="handleFileSelect(event,'image')">
             <input type="file" id="inputVideo" accept="video/*" style="display:none" onchange="handleFileSelect(event,'video')">
             <input type="file" id="inputFile" accept="*/*" style="display:none" onchange="handleFileSelect(event,'file')">
             <div class="voice-indicator" id="voiceIndicator">
               <div class="voice-bars"><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div></div>
-              <span>🎤 Merekam... ketuk mic untuk berhenti &amp; teks muncul di input</span>
+              <span>🎤 Merekam... ketuk mic untuk berhenti</span>
             </div>
-            <div class="attach-row">
-              <button class="attach-icon-btn" onclick="showComingSoonOverlay('Foto')"><i class="fa-solid fa-image" style="color:#00d4ff"></i> Foto</button>
-              <button class="attach-icon-btn" onclick="showComingSoonOverlay('Video')"><i class="fa-solid fa-video" style="color:#ff4d6d"></i> Video</button>
-              <button class="attach-icon-btn" onclick="showComingSoonOverlay('File')"><i class="fa-solid fa-file-arrow-up" style="color:#7c3aed"></i> File</button>
-              <!-- Console toggle inline di attach-row -->
-              <button id="hcConsoleToggleBtn" onclick="HC_CONSOLE.toggle()">
-                <span class="hctb-icon">▶_</span>
-                <span class="hctb-label">CONSOLE</span>
-                <span class="hctb-badge" id="hctbBadge">0</span>
-              </button>
-              <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Kirim pesan suara"><i class="fa-solid fa-microphone"></i></button>
-            </div>
+            <!-- Pending attach preview -->
             <div class="pending-attach-wrap" id="pendingAttachWrap">
               <img id="pendingThumb" class="pending-attach-thumb" src="" alt="" style="display:none">
               <div class="pending-attach-info"><div class="pending-attach-name" id="pendingName"></div><div class="pending-attach-size" id="pendingSize"></div></div>
               <button class="pending-attach-remove" onclick="clearPendingAttach()">✕</button>
             </div>
-            <div class="input-row">
-              <textarea class="prompt-input" id="promptInput" placeholder="Tanya apa aja, minta script Roblox, website, math..." rows="2" onkeydown="handleKey(event)"></textarea>
-              <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+            <!-- Main input bar -->
+            <div class="fz-input-bar">
+              <!-- Attachment button (paperclip) opens popup -->
+              <button class="fz-attach-btn" id="fzAttachBtn" onclick="toggleAttachMenu()" title="Kirim foto/video/file">
+                <i class="fa-solid fa-paperclip"></i>
+              </button>
+              <!-- Attach popup menu -->
+              <div class="fz-attach-menu" id="fzAttachMenu">
+                <button onclick="document.getElementById('inputImage').click();closeAttachMenu()" class="fz-attach-opt">
+                  <i class="fa-solid fa-image" style="color:#00d4ff"></i> Foto
+                </button>
+                <button onclick="document.getElementById('inputVideo').click();closeAttachMenu()" class="fz-attach-opt">
+                  <i class="fa-solid fa-video" style="color:#ff4d6d"></i> Video
+                </button>
+                <button onclick="document.getElementById('inputFile').click();closeAttachMenu()" class="fz-attach-opt">
+                  <i class="fa-solid fa-file-arrow-up" style="color:#a78bfa"></i> File
+                </button>
+              </div>
+              <textarea class="fz-textarea prompt-input" id="promptInput" placeholder="Ketik pesan..." rows="1" onkeydown="handleKey(event)" oninput="fzAutoResize(this)"></textarea>
+              <button class="fz-voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice"><i class="fa-solid fa-microphone"></i></button>
+              <button class="fz-send-btn" id="sendBtn" onclick="sendMessage()">
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+            <!-- Console + disclaimer row -->
+            <div class="fz-bottom-row">
+              <button id="hcConsoleToggleBtn" onclick="HC_CONSOLE.toggle()" class="fz-console-btn">
+                <span>▶_</span> CONSOLE <span class="hctb-badge" id="hctbBadge">0</span>
+              </button>
+              <span class="fz-disclaimer">HANAMORI CALYX bisa salah, verifikasi info penting ya.</span>
             </div>
           </div>
         </div>

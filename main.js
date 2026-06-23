@@ -62,7 +62,7 @@ const CFG = {
    *
    * MATIIN MAINTENANCE: kosongkan MAINTENANCE_TEXT
    */
-  MAINTENANCE_TEXT: "sabar yah guys,lagi update & fix beberapa bug",
+  MAINTENANCE_TEXT: "",
   MAINTENANCE_MODE: "manual",       // "auto" = dengan timer | "manual" = sampai dimatiin manual
   MAINTENANCE_DURATION_HOURS: 2,
   MAINTENANCE_START: "",
@@ -684,6 +684,48 @@ const MAINT_KEY = 'hc_maint_start'; // persistent timer key
 function formatDateTime(date) {
   return date.toLocaleDateString('id-ID', { weekday:'short', day:'2-digit', month:'short', year:'numeric' })
     + ' • ' + date.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+}
+
+/* ══ FIZZ-STYLE HELPERS ══ */
+function hcQuickSend(text) {
+  const welcome = document.getElementById('fzWelcome');
+  const chat = document.getElementById('chatMessages');
+  if (welcome) welcome.style.display = 'none';
+  if (chat) chat.style.display = '';
+  const inp = document.getElementById('promptInput');
+  if (inp) { inp.value = text; fzAutoResize(inp); }
+  sendMessage();
+}
+
+function fzAutoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  const sendBtn = document.getElementById('sendBtn');
+  if (sendBtn) sendBtn.disabled = !el.value.trim();
+}
+
+let _attachMenuOpen = false;
+function toggleAttachMenu() {
+  _attachMenuOpen = !_attachMenuOpen;
+  const m = document.getElementById('fzAttachMenu');
+  if (m) m.classList.toggle('open', _attachMenuOpen);
+}
+function closeAttachMenu() {
+  _attachMenuOpen = false;
+  const m = document.getElementById('fzAttachMenu');
+  if (m) m.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#fzAttachBtn') && !e.target.closest('#fzAttachMenu')) closeAttachMenu();
+});
+
+function _fzShowChat() {
+  const welcome = document.getElementById('fzWelcome');
+  const chat = document.getElementById('chatMessages');
+  if (welcome && welcome.style.display !== 'none') {
+    welcome.style.display = 'none';
+    if (chat) { chat.style.display = ''; }
+  }
 }
 
 function maintCopyTip(text) {
@@ -1757,6 +1799,11 @@ function newChat() {
   currentScripts = []; currentCode = ''; activeScriptIdx = 0;
   renderScriptTabs();
   document.getElementById('chatMessages').innerHTML = `<div class="message ai"><div class="avatar ai"><img src="${CFG.AVATAR_AI_URL}" style="width:100%;height:100%;object-fit:cover"></div><div class="bubble">Halo! Aku <strong>HANAMORI CALYX AI v5.0</strong> — siap membantu! 🚀🎮<br><span style="font-size:.7rem;color:var(--muted)">Mau script Roblox apa hari ini? Tanya apa aja!</span><span class="msg-time">${getTime()}</span></div></div>`;
+  // Kembali ke welcome screen setelah chat baru
+  const fzW = document.getElementById('fzWelcome');
+  const fzC = document.getElementById('chatMessages');
+  if (fzW) fzW.style.display = '';
+  if (fzC) fzC.style.display = 'none';
   document.getElementById('codeWrapper').innerHTML = `<div class="empty-code"><div class="empty-icon">🎮</div><div>Script akan muncul di sini</div><div style="font-size:.6rem;color:#334155">Minta script Roblox di panel atas</div></div>`;
   document.getElementById('fileBtnBar').style.display = 'none';
   document.getElementById('filename').textContent = '-- belum ada script --';
@@ -1773,6 +1820,10 @@ function clearChat() {
   currentScripts = []; currentCode = ''; activeScriptIdx = 0;
   renderScriptTabs();
   document.getElementById('chatMessages').innerHTML = `<div class="message ai"><div class="avatar ai"><img src="${CFG.AVATAR_AI_URL}" alt="ai" style="width:100%;height:100%;object-fit:cover;"></div><div class="bubble">Chat dibersihkan! Siap membantu lagi bro 🚀<span class="msg-time">${getTime()}</span></div></div>`;
+  const fzW2 = document.getElementById('fzWelcome');
+  const fzC2 = document.getElementById('chatMessages');
+  if (fzW2) fzW2.style.display = '';
+  if (fzC2) fzC2.style.display = 'none';
   renderChatHistory();
   showToast('🗑 Chat dihapus!');
 }
@@ -2072,7 +2123,7 @@ async function sendMessage() {
     HC_CONSOLE.log('WARN', 'Banned pattern blocked: ' + prompt.slice(0,40));
     setTimeout(() => addMsg('ai', getBannedReply()), 400); return;
   }
-  isLoading = true; inp.value = '';
+  isLoading = true; inp.value = ''; _fzShowChat();
   inp.style.height = 'auto';
   document.getElementById('sendBtn').disabled = true;
   document.getElementById('drawerStatus').textContent = 'AI sedang berpikir...';
