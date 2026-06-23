@@ -579,3 +579,11 @@ header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;alig
 .intro-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:1}
 .intro-status-row{display:flex;align-items:center;justify-content:center;min-height:18px;margin-top:6px}
 .intro-status-item{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(0,212,255,.6);letter-spacing:2px;transition:opacity .15s ease}
+/* ══ MAINT QUICK TIPS BUTTONS ══ */
+.maint-quicktips-label{font-size:.62rem;font-family:'Share Tech Mono',monospace;color:rgba(0,212,255,.7);letter-spacing:1.5px;text-align:center;margin:16px 0 8px;text-transform:uppercase}
+.maint-quicktips-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;position:relative;z-index:2}
+.maint-qt-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:12px;border:1px solid rgba(0,212,255,.25);background:rgba(0,212,255,.06);color:rgba(0,212,255,.9);font-size:.6rem;font-family:'Share Tech Mono',monospace;cursor:pointer;transition:all .2s ease;letter-spacing:.4px;text-align:center;line-height:1.3}
+.maint-qt-btn:hover{background:rgba(0,212,255,.18);border-color:rgba(0,212,255,.6);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,212,255,.2)}
+.maint-qt-btn:active{transform:scale(.97)}
+.maint-qt-btn i{font-size:.75rem;color:var(--accent2)}
+.maint-qt-toast{position:relative;z-index:3;margin:8px 0 0;padding:7px 14px;border-radius:10px;background:rgba(0,255,136,.12);border:1px solid rgba(0,255,136,.3);color:#00ff88;font-size:.62rem;font-family:'Share Tech Mono',monospace;text-align:center;animation:fadeInUp .3s ease}
