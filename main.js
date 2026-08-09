@@ -9,7 +9,7 @@ const CFG = {
   LOGO_URL:        "https://married-beige-jymjbokr0h.edgeone.app/file_00000000f21072088b47ac7583ad4cee.png",
   AVATAR_AI_URL:   "https://married-beige-jymjbokr0h.edgeone.app/file_00000000f21072088b47ac7583ad4cee.png",
   AVATAR_USER_URL: "https://explicit-scarlet-mvdzff6kpt.edgeone.app/IMG-20260406-WA0038.jpg",
-  INFO_AVATAR_URL: "https://crucial-amber-e9vl4tleum.edgeone.app/IMG_20260403_194236.jpg",
+  INFO_AVATAR_URL: "https://files.catbox.moe/4i6vdu.png",
   BG_HOME:   "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
   BG_INFO:   "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
   BG_UPDATE: "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
@@ -43,7 +43,7 @@ const CFG = {
     ]
   },
 ],
-  DEV_NAME:    "Rahman X Cika",
+  DEV_NAME:    "RenzzOxv18",
   DEV_ROLE:    "Lead Developer & UI/UX Designer",
   APP_VERSION: "v5.0.0",
 
@@ -604,59 +604,131 @@ Jika user meminta coding:
 - JANGAN POTONG KODE di tengah, tulis sampai selesai 100%`;
 
 /* ================================================================
-   INTRO
+   AUTH — LOGIN / REGISTER (menggantikan loading screen lama)
+   Akun tersimpan di localStorage device ini. Sekali login, sesi
+   akan tetap aktif sampai user pilih Logout di drawer.
 ================================================================ */
-function initIntro() {
-  const il = document.getElementById('introLogoImg');
-  if (CFG.LOGO_URL) il.src = CFG.LOGO_URL;
-  const parts = document.getElementById('introParts');
-  const colors = ['#00d4ff','#7c3aed','#ff4d6d','#10b981','#fbbf24'];
-  for (let i = 0; i < 24; i++) {
-    const p = document.createElement('div');
-    p.className = 'intro-particle';
-    const size = Math.random() * 6 + 3;
-    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${Math.random()*4+3}s;animation-delay:${Math.random()*2}s;`;
-    parts.appendChild(p);
+const AUTH_ACCOUNT_KEY  = 'hc_auth_account';
+const AUTH_SESSION_KEY  = 'hc_auth_logged_in';
+let authMode = 'login'; // 'login' | 'register'
+
+function _getAuthAccount() {
+  try { return JSON.parse(localStorage.getItem(AUTH_ACCOUNT_KEY) || 'null'); } catch { return null; }
+}
+function _setAuthAccount(acc) { try { localStorage.setItem(AUTH_ACCOUNT_KEY, JSON.stringify(acc)); } catch {} }
+
+function initAuth() {
+  const overlay = document.getElementById('authOverlay');
+  if (!overlay) return;
+  const account  = _getAuthAccount();
+  const loggedIn = localStorage.getItem(AUTH_SESSION_KEY) === '1';
+
+  if (account && loggedIn) {
+    // Sudah pernah login sebelumnya — langsung masuk, gak perlu login ulang
+    overlay.classList.add('hidden');
+    setTimeout(() => overlay.remove(), 500);
+    updateDrawerUsername();
+    return;
   }
 
-  // Binary chars
-  '010110100110010101001011001111000101101'.split('').forEach((c, i) => {
-    const el = document.createElement('span');
-    el.className = 'intro-char';
-    el.style.animationDelay = (i * 0.04) + 's';
-    el.style.background = i % 2 === 0 ? 'var(--accent)' : 'var(--accent3)';
-    document.getElementById('introChars').appendChild(el);
-  });
+  authMode = account ? 'login' : 'register';
+  renderAuthMode();
+  const u = document.getElementById('authUsername');
+  if (u) u.focus();
+}
 
-  // Status cycle
-  const statusMessages = [
-    'Initializing AI core...',
-    'Loading persona modules...',
-    'Connecting Overchat proxy...',
-    'Anti-jailbreak active...',
-    'Voice engine ready...',
-    'System online — Welcome! ✓'
-  ];
-  const statEl = document.getElementById('istat1');
-  let si = 0;
-  const statInterval = setInterval(() => {
-    si++;
-    if (si >= statusMessages.length) { clearInterval(statInterval); return; }
-    if (statEl) {
-      statEl.style.opacity = '0';
-      setTimeout(() => {
-        statEl.textContent = statusMessages[si];
-        statEl.style.opacity = '1';
-      }, 150);
+function renderAuthMode() {
+  const label       = document.getElementById('authModeLabel');
+  const submitBtn   = document.getElementById('authSubmitBtn');
+  const switchWrap  = document.getElementById('authSwitchWrap');
+  const confirmWrap = document.getElementById('authConfirmWrap');
+  const pw2         = document.getElementById('authPassword2');
+  const errEl       = document.getElementById('authError');
+  if (errEl) errEl.textContent = '';
+  if (authMode === 'register') {
+    label.textContent = '◈ DAFTAR AKUN BARU ◈';
+    submitBtn.textContent = 'Daftar & Masuk';
+    confirmWrap.style.display = '';
+    if (pw2) pw2.setAttribute('required', 'required');
+    switchWrap.innerHTML = 'Sudah punya akun? <a onclick="authSwitchMode()">Masuk</a>';
+  } else {
+    label.textContent = '◈ MASUK KE AKUN ◈';
+    submitBtn.textContent = 'Masuk';
+    confirmWrap.style.display = 'none';
+    if (pw2) pw2.removeAttribute('required');
+    switchWrap.innerHTML = 'Belum punya akun? <a onclick="authSwitchMode()">Daftar</a>';
+  }
+}
+
+function authSwitchMode() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  renderAuthMode();
+}
+
+function authTogglePw(id, btn) {
+  const inp = document.getElementById(id);
+  const icon = btn.querySelector('i');
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+  } else {
+    inp.type = 'password';
+    if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+  }
+}
+
+function authSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const errEl = document.getElementById('authError');
+  if (errEl) errEl.textContent = '';
+
+  const username = (document.getElementById('authUsername').value || '').trim();
+  const password = document.getElementById('authPassword').value || '';
+
+  if (username.length < 3) { if (errEl) errEl.textContent = '⚠ Username minimal 3 karakter!'; return false; }
+  if (password.length < 4) { if (errEl) errEl.textContent = '⚠ Password minimal 4 karakter!'; return false; }
+
+  const account = _getAuthAccount();
+
+  if (authMode === 'register') {
+    const pw2 = document.getElementById('authPassword2').value || '';
+    if (password !== pw2) { if (errEl) errEl.textContent = '⚠ Konfirmasi password tidak cocok!'; return false; }
+    _setAuthAccount({ username, password });
+    localStorage.setItem(AUTH_SESSION_KEY, '1');
+    _closeAuthOverlay();
+    showToast(`✅ Akun dibuat! Selamat datang, ${username}!`);
+  } else {
+    if (!account || account.username !== username || account.password !== password) {
+      if (errEl) errEl.textContent = '⚠ Username atau password salah!';
+      return false;
     }
-  }, 400);
+    localStorage.setItem(AUTH_SESSION_KEY, '1');
+    _closeAuthOverlay();
+    showToast(`✅ Selamat datang kembali, ${username}!`);
+  }
+  updateDrawerUsername();
+  return false;
+}
 
-  setTimeout(() => {
-    clearInterval(statInterval);
-    const ov = document.getElementById('introOverlay');
-    ov.classList.add('hidden');
-    setTimeout(() => ov.remove(), 700);
-  }, 2800);
+function _closeAuthOverlay() {
+  const overlay = document.getElementById('authOverlay');
+  if (!overlay) return;
+  overlay.classList.add('hidden');
+  setTimeout(() => overlay.remove(), 500);
+}
+
+function authLogout() {
+  localStorage.removeItem(AUTH_SESSION_KEY);
+  closeDrawer();
+  showToast('👋 Logout berhasil!');
+  setTimeout(() => location.reload(), 500);
+}
+
+function updateDrawerUsername() {
+  const account = _getAuthAccount();
+  const el = document.getElementById('drawerUsername');
+  if (el) el.textContent = account ? '@' + account.username : '';
 }
 
 /* ================================================================
@@ -895,7 +967,7 @@ function navTo(page, el) {
 ================================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   HC_CONSOLE.init();
-  initIntro();
+  initAuth();
   applyConfig();
   renderUpdate();
   renderSave();
@@ -931,7 +1003,7 @@ function initBetaOverlay() {
   setTimeout(() => {
     const ov = document.getElementById('betaOverlay');
     if (ov) ov.classList.add('show');
-  }, 3200); // muncul setelah intro selesai
+  }, 900); // muncul sesaat setelah masuk (loading screen sudah dihapus)
 }
 function closeBetaOverlay() {
   const ov = document.getElementById('betaOverlay');
@@ -960,7 +1032,7 @@ function initAdOverlay() {
   if (seen) return;
   const adDelay = iklanCfg ? iklanCfg.AD_DELAY_MS : (CFG.AD_DELAY_MS || 1500);
   const adInterval = iklanCfg ? iklanCfg.AD_AUTO_INTERVAL_MS : (CFG.AD_AUTO_INTERVAL_MS || 5000);
-  const delay = (CFG.SHOW_BETA ? 3200 + 1000 : 0) + adDelay;
+  const delay = (CFG.SHOW_BETA ? 900 + 1000 : 0) + adDelay;
   setTimeout(() => {
     adIndex = 0;
     renderAd(0);
@@ -1277,6 +1349,18 @@ function applyConfig() {
     const i = document.getElementById('headerLogoImg');
     i.src = CFG.LOGO_URL; i.style.display = 'block';
     document.getElementById('drawerLogoImg').src = CFG.LOGO_URL;
+    // Kotak "HC" kecil di header chat
+    const fzImg = document.getElementById('fzLogoImg');
+    const fzTxt = document.getElementById('fzLogoTxt');
+    if (fzImg) { fzImg.src = CFG.LOGO_URL; fzImg.style.display = 'block'; if (fzTxt) fzTxt.style.display = 'none'; }
+    // Kotak "HC" besar di welcome screen tengah
+    const fzwImg = document.getElementById('fzWelcomeLogoImg');
+    const fzwTxt = document.getElementById('fzWelcomeLogoTxt');
+    if (fzwImg) { fzwImg.src = CFG.LOGO_URL; fzwImg.style.display = 'block'; if (fzwTxt) fzwTxt.style.display = 'none'; }
+    // Logo di layar login/daftar
+    const authImg = document.getElementById('authLogoImg');
+    const authFb = document.getElementById('authLogoFallback');
+    if (authImg) { authImg.src = CFG.LOGO_URL; authImg.style.display = 'block'; if (authFb) authFb.style.display = 'none'; }
   }
   if (CFG.INFO_AVATAR_URL) document.getElementById('infoAvatarImg').src = CFG.INFO_AVATAR_URL;
   if (CFG.AVATAR_AI_URL) {
@@ -1781,6 +1865,12 @@ function loadChatSession(id) {
     if (m.role === 'user') { const txt = typeof m.content === 'string' ? m.content : (m.content.find?.(x => x.type === 'text')?.text || ''); addMsg('user', esc(txt)); }
     else if (m.role === 'assistant') addMsg('ai', renderMarkdown(m.content));
   });
+  // FIX: pindah dari welcome screen ke tampilan chat, kalau tidak chat yang
+  // sudah di-load tidak akan pernah terlihat (bug "gagal load").
+  const fzWLoad = document.getElementById('fzWelcome');
+  const fzCLoad = document.getElementById('chatMessages');
+  if (fzWLoad) fzWLoad.style.display = 'none';
+  if (fzCLoad) fzCLoad.style.display = '';
   renderChatHistory();
   closeDrawer();
   showToast('📂 Chat di-load!');

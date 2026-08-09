@@ -18,24 +18,41 @@
 </head>
 <body>
 
-<!-- ══ INTRO ══ -->
-<div id="introOverlay">
-  <div class="intro-bg-particles" id="introParts"></div>
-  <!-- Scanline effect -->
-  <div class="intro-scanline"></div>
-  <!-- Grid overlay -->
-  <div class="intro-grid"></div>
-  <div class="intro-logo-wrap">
-    <div class="intro-logo-ring">
-      <img class="intro-logo-img" id="introLogoImg" src="" alt="HC">
+<!-- ══ AUTH (LOGIN / REGISTER) ══ -->
+<div id="authOverlay">
+  <div class="auth-bg-grid"></div>
+  <div class="auth-box">
+    <div class="auth-logo-ring">
+      <img class="auth-logo-img" id="authLogoImg" src="" alt="HC">
+      <span class="auth-logo-fallback" id="authLogoFallback">HC</span>
     </div>
-    <div class="intro-title">HANAMORI CALYX AI</div>
-    <div class="intro-sub">◈ v1.1 INITIALIZING ◈</div>
-    <div class="intro-bar-wrap"><div class="intro-bar"></div></div>
-    <div class="intro-status-row" id="introStatusRow">
-      <span class="intro-status-item" id="istat1">Loading modules...</span>
-    </div>
-    <div class="intro-chars" id="introChars"></div>
+    <div class="auth-title">HANAMORI CALYX AI</div>
+    <div class="auth-mode-label" id="authModeLabel">◈ MASUK KE AKUN ◈</div>
+    <form id="authForm" onsubmit="return authSubmit(event)" autocomplete="off">
+      <div class="auth-field">
+        <label>Username</label>
+        <div class="auth-input-wrap">
+          <input type="text" id="authUsername" class="auth-input" placeholder="Masukkan username" autocomplete="username" maxlength="24" required>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <div class="auth-input-wrap">
+          <input type="password" id="authPassword" class="auth-input" placeholder="Masukkan password" autocomplete="current-password" maxlength="32" required>
+          <button type="button" class="auth-eye-btn" onclick="authTogglePw('authPassword',this)"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <div class="auth-field" id="authConfirmWrap" style="display:none">
+        <label>Konfirmasi Password</label>
+        <div class="auth-input-wrap">
+          <input type="password" id="authPassword2" class="auth-input" placeholder="Ulangi password" autocomplete="new-password" maxlength="32">
+          <button type="button" class="auth-eye-btn" onclick="authTogglePw('authPassword2',this)"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <button type="submit" class="auth-submit-btn" id="authSubmitBtn">Masuk</button>
+    </form>
+    <div class="auth-switch" id="authSwitchWrap">Belum punya akun? <a onclick="authSwitchMode()">Daftar</a></div>
   </div>
 </div>
 
@@ -191,6 +208,7 @@
     <div class="drawer-sep"></div>
     <div class="drawer-section-label">Lainnya</div>
     <div class="drawer-item" onclick="clearChat();closeDrawer()"><i class="fa-solid fa-trash"></i>Hapus Riwayat Chat</div>
+    <div class="drawer-item" id="dmLogout" onclick="authLogout()"><i class="fa-solid fa-right-from-bracket"></i>Logout</div>
     <div style="height:1px;background:var(--border);margin:8px 0"></div>
     <div class="chat-new-btn" onclick="newChat();closeDrawer()"><i class="fa-solid fa-plus"></i><span>Chat Baru</span></div>
     <div class="chat-history-label">Riwayat Chat</div>
@@ -198,6 +216,7 @@
   </div>
   <div class="drawer-footer">
     <div class="drawer-status"><div class="drawer-status-dot"></div><span id="drawerStatus">AI Online &amp; Siap</span></div>
+    <div class="drawer-status" style="margin-top:4px"><i class="fa-solid fa-user" style="font-size:.65rem;color:var(--accent)"></i><span id="drawerUsername" style="margin-left:6px;font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted)"></span></div>
   </div>
 </div>
 
@@ -253,7 +272,7 @@
           <!-- ══ FIZZ-STYLE HEADER ══ -->
           <div class="fz-header">
             <div class="fz-header-left">
-              <div class="fz-logo-box">HC</div>
+              <div class="fz-logo-box" id="fzLogoBox"><img id="fzLogoImg" src="" alt="HC"><span id="fzLogoTxt">HC</span></div>
               <div class="fz-header-titles">
                 <span class="fz-header-name"><span class="fz-accent">HANAMORI</span> CALYX AI</span>
                 <span class="fz-header-sub">v5.0 • Roblox Expert</span>
@@ -270,21 +289,21 @@
 
           <!-- ══ WELCOME SCREEN (shown when no chat yet) ══ -->
           <div class="fz-welcome" id="fzWelcome">
-            <div class="fz-welcome-logo">HC</div>
+            <div class="fz-welcome-logo" id="fzWelcomeLogo"><img id="fzWelcomeLogoImg" src="" alt="HC"><span id="fzWelcomeLogoTxt">HC</span></div>
             <h1 class="fz-welcome-title"><span class="fz-accent">HANAMORI</span> CALYX AI</h1>
             <p class="fz-welcome-desc">Asisten AI cerdas oleh <span class="fz-accent">Renzzz</span>. Bisa chat, kirim gambar, script Roblox, dan banyak lagi.</p>
             <div class="fz-quick-grid">
-              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan script Fly GUI Roblox Studio dengan toggle button yang keren')">
-                <i class="fa-solid fa-plane fz-quick-icon"></i><span>Script Fly Roblox</span>
+              <button class="fz-quick-btn" onclick="hcQuickSend('Aku mau belajar ngoding dari nol, ajarin aku step by step ya dengan bahasa yang gampang dimengerti')">
+                <i class="fa-solid fa-code fz-quick-icon"></i><span>Belajar Ngoding</span>
               </button>
-              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan website landing page keren dengan HTML CSS JS animasi')">
-                <i class="fa-solid fa-globe fz-quick-icon"></i><span>Website Keren</span>
+              <button class="fz-quick-btn" onclick="hcQuickSend('Aku mau tanya tentang pelajaran sekolah, bantuin jelasin dengan mudah ya')">
+                <i class="fa-solid fa-book fz-quick-icon"></i><span>Pelajaran Sekolah</span>
               </button>
-              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan Chat Tag GUI untuk Roblox Studio dengan warna kustom')">
-                <i class="fa-solid fa-comment fz-quick-icon"></i><span>Chat Tag Roblox</span>
+              <button class="fz-quick-btn" onclick="hcQuickSend('Aku mau tanya cara membuat website dari awal, jelasin lengkap ya')">
+                <i class="fa-solid fa-globe fz-quick-icon"></i><span>Membuat Website</span>
               </button>
-              <button class="fz-quick-btn" onclick="hcQuickSend('Buatkan script Admin Panel Roblox Studio lengkap dengan kick, ban, speed')">
-                <i class="fa-solid fa-shield fz-quick-icon"></i><span>Admin Panel</span>
+              <button class="fz-quick-btn" onclick="hcQuickSend('Aku mau tanya cara jadi content creator yang sukses, kasih tips lengkapnya ya')">
+                <i class="fa-solid fa-video fz-quick-icon"></i><span>Jadi Content Creator</span>
               </button>
             </div>
           </div>
@@ -322,6 +341,13 @@
               <div class="pending-attach-info"><div class="pending-attach-name" id="pendingName"></div><div class="pending-attach-size" id="pendingSize"></div></div>
               <button class="pending-attach-remove" onclick="clearPendingAttach()">✕</button>
             </div>
+            <!-- Console + disclaimer row (di atas kolom tulis) -->
+            <div class="fz-bottom-row">
+              <button id="hcConsoleToggleBtn" onclick="HC_CONSOLE.toggle()" class="fz-console-btn">
+                <span>▶_</span> CONSOLE <span class="hctb-badge" id="hctbBadge">0</span>
+              </button>
+              <span class="fz-disclaimer">HANAMORI CALYX bisa salah, verifikasi info penting ya.</span>
+            </div>
             <!-- Main input bar -->
             <div class="fz-input-bar">
               <!-- Attachment button (paperclip) opens popup -->
@@ -345,13 +371,6 @@
               <button class="fz-send-btn" id="sendBtn" onclick="sendMessage()">
                 <i class="fa-solid fa-paper-plane"></i>
               </button>
-            </div>
-            <!-- Console + disclaimer row -->
-            <div class="fz-bottom-row">
-              <button id="hcConsoleToggleBtn" onclick="HC_CONSOLE.toggle()" class="fz-console-btn">
-                <span>▶_</span> CONSOLE <span class="hctb-badge" id="hctbBadge">0</span>
-              </button>
-              <span class="fz-disclaimer">HANAMORI CALYX bisa salah, verifikasi info penting ya.</span>
             </div>
           </div>
         </div>
@@ -417,8 +436,8 @@
       </div>
       <div class="info-section">
         <div class="info-section-title"><i class="fa-solid fa-code"></i> Spesifikasi Teknis</div>
-        <div class="info-row"><span class="info-row-label">Model AI</span><span class="info-row-value">Llama 4 Scout (OpenRouter)</span></div>
-        <div class="info-row"><span class="info-row-label">Max Tokens</span><span class="info-row-value">8192 tokens</span></div>
+        <div class="info-row"><span class="info-row-label">Model AI</span><span class="info-row-value">Qwen3 Next 80B (Overchat)</span></div>
+        <div class="info-row"><span class="info-row-label">Max Tokens</span><span class="info-row-value">4000 tokens</span></div>
         <div class="info-row"><span class="info-row-label">Voice Input</span><span class="info-row-value">Web Speech API</span></div>
         <div class="info-row"><span class="info-row-label">Multi Script</span><span class="info-row-value">✅ Tab Support</span></div>
         <div class="info-row"><span class="info-row-label">Roblox Expert</span><span class="info-row-value">✅ GUI + LocalScript</span></div>
@@ -433,7 +452,7 @@
           <a class="social-btn dc" id="linkDC" href="#" target="_blank"><i class="fa-brands fa-discord"></i>Discord</a>
         </div>
       </div>
-      <div class="info-footer">DEVELOPER : &copy; <span id="infoYear"></span> RAHMAN X CIKA OFC 18 &nbsp;|&nbsp; By HANAMORI CALYX AI</div>
+      <div class="info-footer">DEVELOPER : &copy; <span id="infoYear"></span> RENZZOXV18 &nbsp;|&nbsp; By HANAMORI CALYX AI</div>
     </div>
 
   </div>
