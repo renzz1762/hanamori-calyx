@@ -6,14 +6,14 @@
 ================================================================ */
 const CFG = {
   // API_KEY tidak diperlukan lagi — auth ditangani server Vercel (aman!)
-  LOGO_URL:        "https://married-beige-jymjbokr0h.edgeone.app/file_00000000f21072088b47ac7583ad4cee.png",
-  AVATAR_AI_URL:   "https://married-beige-jymjbokr0h.edgeone.app/file_00000000f21072088b47ac7583ad4cee.png",
-  AVATAR_USER_URL: "https://explicit-scarlet-mvdzff6kpt.edgeone.app/IMG-20260406-WA0038.jpg",
-  INFO_AVATAR_URL: "https://files.catbox.moe/4i6vdu.png",
-  BG_HOME:   "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
-  BG_INFO:   "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
-  BG_UPDATE: "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
-  BG_SAVE:   "https://amateur-scarlet-hcgklokuxa.edgeone.app/file_000000005a107208a35adaf05fea5b23.png",
+  LOGO_URL:        "https://files.catbox.moe/852yt5.png",
+  AVATAR_AI_URL:   "https://files.catbox.moe/852yt5.png",
+  AVATAR_USER_URL: "https://files.catbox.moe/852yt5.png",
+  INFO_AVATAR_URL: "https://files.catbox.moe/852yt5.png",
+  BG_HOME:   "",
+  BG_INFO:   "",
+  BG_UPDATE: "",
+  BG_SAVE:   "",
   LINK_WA:      "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A",
   LINK_IG:      "https://www.instagram.com/47xcikal_?igsh=MWc5NmpwY2xtYzlpcw==",
   LINK_TIKTOK:  "https://tiktok.com/@renzzzzofc18",
@@ -43,9 +43,9 @@ const CFG = {
     ]
   },
 ],
-  DEV_NAME:    "RenzzOxv18",
+  DEV_NAME:    "Cik x Raiyka",
   DEV_ROLE:    "Lead Developer & UI/UX Designer",
-  APP_VERSION: "v5.0.0",
+  APP_VERSION: "V1.2",
 
   /* ─── MAINTENANCE CONFIG ───
    * MODE 1 - AUTO (dengan countdown):
@@ -62,6 +62,8 @@ const CFG = {
    *
    * MATIIN MAINTENANCE: kosongkan MAINTENANCE_TEXT
    */
+  // Nilai di bawah ini cuma FALLBACK offline/error.
+  // Kontrol utama maintenance ada di Environment Variable Vercel (lihat api/maintenance.js).
   MAINTENANCE_TEXT: "",
   MAINTENANCE_MODE: "manual",       // "auto" = dengan timer | "manual" = sampai dimatiin manual
   MAINTENANCE_DURATION_HOURS: 2,
@@ -100,7 +102,7 @@ UPDATES: [
   },
   {
     tag: "new",
-    title: "HANAMORI CALYX AI v5.0 — Roblox Expert! 🎮",
+    title: "HANAMORI CALYX AI v1.2 — Roblox Expert! 🎮",
     date: "14 April 2026",
     text: "Upgrade besar! coding script roblox studio",
     media_url: "",
@@ -809,10 +811,21 @@ function maintCopyTip(text) {
   setTimeout(() => { toast.style.display = 'none'; }, 2800);
 }
 
+function spawnGoldParticles() {
+  const container = document.getElementById('hcGoldParticles');
+  if (!container) return;
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('span');
+    const size = Math.random() * 80 + 30;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*12+8}s;animation-delay:${Math.random()*8}s`;
+    container.appendChild(p);
+  }
+}
+
 function spawnMaintParticles() {
   const container = document.getElementById('maintParticles');
   if (!container) return;
-  const colors = ['#ff4d6d','#7c3aed','#00d4ff','#fbbf24','#10b981'];
+  const colors = ['#f5941f','#ffb300','#161608','#16a34a','#dc2626'];
   for (let i = 0; i < 18; i++) {
     const p = document.createElement('div');
     p.className = 'maint-p';
@@ -821,6 +834,24 @@ function spawnMaintParticles() {
     p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;background:${color};opacity:.7;animation-duration:${Math.random()*5+4}s;animation-delay:${Math.random()*3}s;filter:blur(${Math.random()*2}px)`;
     container.appendChild(p);
   }
+}
+
+// Narik status maintenance dari server Vercel (Environment Variable).
+// Isi MAINTENANCE_TEXT di dashboard Vercel -> overlay muncul.
+// Kosongkan / hapus value-nya -> overlay ga muncul. Ga perlu redeploy.
+async function loadMaintFromServer() {
+  try {
+    const res = await fetch('/api/maintenance', { cache: 'no-store' });
+    const data = await res.json();
+    CFG.MAINTENANCE_TEXT = (data && typeof data.text === 'string') ? data.text : "";
+    if (data && data.mode) CFG.MAINTENANCE_MODE = data.mode;
+    if (data && data.durationHours) CFG.MAINTENANCE_DURATION_HOURS = data.durationHours;
+    if (data && typeof data.start === 'string') CFG.MAINTENANCE_START = data.start;
+  } catch (e) {
+    HC_CONSOLE.log('ERR', 'Gagal ambil status maintenance dari server, fallback ke lokal.');
+    // fallback: pakai CFG.MAINTENANCE_TEXT bawaan (biasanya kosong = ga muncul)
+  }
+  checkMaint();
 }
 
 function checkMaint() {
@@ -836,7 +867,7 @@ function checkMaint() {
     if (cdWrap) cdWrap.style.display = 'none';
     const schedEl = document.getElementById('maintSchedule');
     if (schedEl) schedEl.style.display = 'none';
-    document.getElementById('maintEta').innerHTML = '🔧 <strong style="color:var(--accent2)">Maintenance sampai ada pemberitahuan lebih lanjut</strong>';
+    document.getElementById('maintEta').innerHTML = '<i class="fa-solid fa-wrench"></i> <strong style="color:var(--hc-gold)">Maintenance sampai ada pemberitahuan lebih lanjut</strong>';
     document.getElementById('maintProgressBar').style.width = '60%';
     return; // skip countdown logic
   }
@@ -910,11 +941,11 @@ function startMaintCountdown() {
     const etaMins = Math.ceil(remaining / 60000);
     if (etaMins > 60) {
       const etaH = Math.floor(etaMins / 60); const etaM = etaMins % 60;
-      document.getElementById('maintEta').innerHTML = `⏳ Selesai dalam <strong style="color:var(--accent2)">${etaH} jam ${etaM} menit</strong>`;
+      document.getElementById('maintEta').innerHTML = `<i class="fa-solid fa-hourglass-half"></i> Selesai dalam <strong style="color:var(--hc-gold)">${etaH} jam ${etaM} menit</strong>`;
     } else if (etaMins > 1) {
-      document.getElementById('maintEta').innerHTML = `⏳ Selesai dalam <strong style="color:var(--accent2)">${etaMins} menit</strong>`;
+      document.getElementById('maintEta').innerHTML = `<i class="fa-solid fa-hourglass-half"></i> Selesai dalam <strong style="color:var(--hc-gold)">${etaMins} menit</strong>`;
     } else {
-      document.getElementById('maintEta').innerHTML = `⚡ <strong style="color:var(--success)">Hampir selesai! Sabar ya bro 😅</strong>`;
+      document.getElementById('maintEta').innerHTML = `<i class="fa-solid fa-bolt"></i> <strong style="color:var(--success)">Hampir selesai! Sabar ya bro</strong>`;
     }
   }
   tick();
@@ -972,7 +1003,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderUpdate();
   renderSave();
   renderChatHistory();
-  checkMaint();
+  loadMaintFromServer();
   document.getElementById('infoYear').textContent = new Date().getFullYear();
   document.getElementById('welcomeTime').textContent = getTime();
   updateClock();
@@ -981,6 +1012,7 @@ window.addEventListener('DOMContentLoaded', () => {
   checkUpdateBadge();
   initBetaOverlay();
   initAdOverlay();
+  spawnGoldParticles();
 });
 
 function checkUpdateBadge() {
@@ -1576,9 +1608,9 @@ const HC_CONSOLE = {
     const body = document.getElementById('hccBody');
     if (!body) return;
     const colors = {
-      SYS:'#64748b', OK:'#10b981', SEND:'#00d4ff', RECV:'#a78bfa',
-      AI:'#fbbf24', ERR:'#ff4d6d', WARN:'#f59e0b', NET:'#38bdf8',
-      VOICE:'#34d399', THINK:'#c084fc', DONE:'#10b981'
+      SYS:'#6b6650', OK:'#16a34a', SEND:'#c47a00', RECV:'#161608',
+      AI:'#f5941f', ERR:'#dc2626', WARN:'#b45309', NET:'#8a7a3a',
+      VOICE:'#16a34a', THINK:'#c47a00', DONE:'#16a34a'
     };
     const prefixes = {
       SYS:'[SYS] ', OK:'[ OK] ', SEND:'[>>>] ', RECV:'[<<<] ',
@@ -2124,29 +2156,29 @@ function showComingSoonOverlay(fitur) {
     ov.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;transition:opacity .3s ease';
     ov.innerHTML = `
       <div id="csSoonBox" style="
-        background:linear-gradient(135deg,rgba(20,20,35,.98),rgba(30,15,45,.98));
-        border:1px solid rgba(124,58,237,.5);border-radius:20px;
+        background:#ffffff;
+        border:3px solid #000;border-radius:20px;
         padding:36px 28px 28px;max-width:320px;width:88%;
         text-align:center;
-        box-shadow:0 0 40px rgba(124,58,237,.3),0 20px 60px rgba(0,0,0,.5);
+        box-shadow:6px 6px 0 rgba(0,0,0,.9);
         position:relative;transform:scale(.9) translateY(20px);
         transition:transform .35s cubic-bezier(.34,1.56,.64,1);
       ">
-        <div style="font-size:3rem;margin-bottom:12px;filter:drop-shadow(0 0 16px rgba(124,58,237,.8))">🚀</div>
-        <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:#a78bfa;letter-spacing:2px;margin-bottom:6px">COMING SOON</div>
-        <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:rgba(0,212,255,.8);letter-spacing:3px;margin-bottom:16px">◈ SEGERA HADIR ◈</div>
-        <div id="csSoonFitur" style="font-size:.9rem;font-weight:600;color:#fff;margin-bottom:10px"></div>
-        <div style="font-size:.72rem;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:20px">
+        <div style="font-size:3rem;margin-bottom:12px">🚀</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:#161608;letter-spacing:2px;margin-bottom:6px">COMING SOON</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#f5941f;letter-spacing:3px;margin-bottom:16px">◈ SEGERA HADIR ◈</div>
+        <div id="csSoonFitur" style="font-size:.9rem;font-weight:600;color:#161608;margin-bottom:10px"></div>
+        <div style="font-size:.72rem;color:#6b6650;line-height:1.6;margin-bottom:20px">
           Fitur ini masih dalam pengembangan.<br>Tunggu update berikutnya ya bro! 😊
         </div>
         <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">
-          <span style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:4px 12px;font-size:.6rem;color:#a78bfa">🔨 Dev lagi kerja</span>
-          <span style="background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);border-radius:20px;padding:4px 12px;font-size:.6rem;color:#00d4ff">⚡ Segera Hadir</span>
+          <span style="background:#fbf9f2;border:2px solid #000;border-radius:20px;padding:4px 12px;font-size:.6rem;color:#161608">🔨 Dev lagi kerja</span>
+          <span style="background:#ffdd6b;border:2px solid #000;border-radius:20px;padding:4px 12px;font-size:.6rem;color:#161608">⚡ Segera Hadir</span>
         </div>
         <button onclick="closeComingSoonOverlay()" style="
           width:100%;padding:11px;
-          background:linear-gradient(135deg,#7c3aed,#a78bfa);
-          border:none;border-radius:12px;color:#fff;
+          background:linear-gradient(135deg,#f5941f,#ffb300);
+          border:2.5px solid #000;border-radius:12px;color:#1a1400;
           font-family:'Share Tech Mono',monospace;
           font-size:.75rem;font-weight:700;letter-spacing:1px;cursor:pointer;
         ">OKE, NUNGGU DULU! 👍</button>

@@ -697,7 +697,7 @@ header {
 }
 .fz-welcome-title { color: #e0f7ff !important; }
 .fz-welcome-desc { color: rgba(160,220,255,.7) !important; }
-.fz-welcome-desc .fz-accent { color: #00c8ff !important; }
+.fz-welcome-desc .fz-accent { color: #f5941f !important; }
 .fz-quick-btn {
   background: rgba(0,30,50,.8) !important;
   border-color: rgba(0,180,255,.2) !important;
@@ -760,7 +760,7 @@ header {
 
 /* ══ BETA OVERLAY — OCEAN REDESIGN ══ */
 #betaOverlay {
-  background: radial-gradient(ellipse at center, rgba(0,30,60,.98) 0%, rgba(0,10,25,.99) 100%) !important;
+  background: radial-gradient(ellipse at center, rgba(245,242,232,.75) 0%, rgba(245,242,232,.75) 100%) !important;
   backdrop-filter: blur(20px);
 }
 .beta-box {
@@ -972,3 +972,415 @@ header {
   50% { box-shadow: 0 0 24px rgba(0,200,255,.6); }
 }
 .fz-send-btn { animation: ocean-glow 3s ease-in-out infinite; }
+
+/* ══════════════════════════════════════════════════════════════
+   HEAVEN CROWN THEME v3 — LIGHT + GOLD FULL REBUILD
+   Putih/krem + hitam + kuning-emas SAJA. Tidak ada biru/ungu.
+   Cuma warna/border/shadow/radius. Tidak ada fitur/tombol baru.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Override token dasar — ini otomatis ngerambat ke semua rule
+   yang pakai var(--accent)/var(--bg)/var(--text)/dst di CSS asli */
+:root{
+  --bg:#f5f2e8 !important;
+  --surface:#ffffff !important;
+  --surface2:#fbf9f2 !important;
+  --border:#000000 !important;
+  --accent:#f5941f !important;
+  --accent2:#c47a00 !important;
+  --accent3:#f5b400 !important;
+  --text:#161608 !important;
+  --muted:#6b6650 !important;
+  --success:#16a34a !important;
+  --glow:0 0 20px rgba(245,148,31,0.28) !important;
+
+  --hc-line:#000000;
+  --hc-gold:#f5941f; --hc-gold2:#ffb300; --hc-gold3:#ffdd6b;
+  --hc-glow:rgba(245,148,31,.22);
+  --hc-shadow: 4px 4px 0 rgba(0,0,0,.9);
+  --hc-shadow-lg: 6px 6px 0 rgba(0,0,0,.9);
+}
+
+body{ background:var(--bg) !important; color:var(--text) !important; }
+html,body{ background-image:radial-gradient(circle,rgba(0,0,0,.06) 1px,transparent 1px) !important; background-size:26px 26px !important; }
+
+/* ── HEADER — kotak putih border hitam ── */
+.app > header{
+  background:#ffffff !important;
+  border:2.5px solid var(--hc-line) !important;
+  border-radius:16px !important;
+  margin:10px 10px 6px !important;
+  box-shadow:var(--hc-shadow) !important;
+  padding:8px 16px !important;
+}
+.logo-icon{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; border:2px solid var(--hc-line) !important; box-shadow:2px 2px 0 rgba(0,0,0,.9) !important; }
+.logo-text{ color:var(--text) !important; }
+.logo-sub{ color:var(--muted) !important; }
+.header-badge{ background:rgba(22,163,74,.12) !important; color:#16a34a !important; border:2px solid #16a34a !important; border-radius:999px !important; padding:5px 12px !important; font-weight:800 !important; }
+.clock-time{ color:#161608 !important; }
+.clock-date{ color:var(--muted) !important; }
+
+/* ── AUTH ── */
+#authOverlay{ background:#f5f2e8 !important; }
+.auth-bg-grid{ background-image:linear-gradient(rgba(0,0,0,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.05) 1px,transparent 1px) !important; }
+.auth-box{ background:#ffffff !important; border:3px solid var(--hc-line) !important; border-radius:26px !important; box-shadow:var(--hc-shadow-lg) !important; }
+.auth-logo-ring{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; border:2.5px solid var(--hc-line) !important; box-shadow:2px 2px 0 rgba(0,0,0,.9) !important; }
+.auth-logo-fallback{ color:#1a1400 !important; }
+.auth-title{ color:var(--text) !important; }
+.auth-mode-label{ color:var(--hc-gold) !important; }
+.auth-field label{ color:var(--muted) !important; }
+.auth-input{ border:2px solid #000 !important; background:#fbf9f2 !important; color:var(--text) !important; border-radius:14px !important; }
+.auth-input:focus{ border-color:var(--hc-gold) !important; box-shadow:0 0 0 3px var(--hc-glow) !important; }
+.auth-eye-btn{ color:var(--muted) !important; }
+.auth-eye-btn:hover{ color:var(--hc-gold) !important; }
+.auth-submit-btn{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; color:#1a1400 !important; font-weight:800 !important; border:2.5px solid var(--hc-line) !important; border-radius:14px !important; box-shadow:3px 3px 0 rgba(0,0,0,.9) !important; }
+.auth-submit-btn:hover{ transform:translate(-1px,-1px) !important; box-shadow:4px 4px 0 rgba(0,0,0,.9) !important; }
+.auth-switch{ color:var(--muted) !important; }
+.auth-switch a{ color:var(--hc-gold) !important; }
+
+/* ── MAINTENANCE ── */
+.maint-bg-glass{ background:rgba(245,242,232,.85) !important; backdrop-filter:blur(10px) !important; }
+.maint-orb{ display:none !important; }
+.maint-grid-lines{ background-image:linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px) !important; }
+.maint-scan-line{ background:linear-gradient(90deg,transparent,rgba(245,148,31,.5),transparent) !important; }
+.maint-box{ background:#ffffff !important; border:3px solid var(--hc-line) !important; border-radius:28px !important; box-shadow:var(--hc-shadow-lg) !important; }
+.maint-box::before{ background:linear-gradient(90deg,transparent,var(--hc-gold),transparent) !important; }
+.maint-box::after{ display:none !important; }
+.maint-badge{ background:var(--hc-gold) !important; border:2px solid var(--hc-line) !important; color:#1a1400 !important; border-radius:999px !important; font-weight:800 !important; box-shadow:2px 2px 0 rgba(0,0,0,.9) !important; }
+.maint-icon-ring::before,.maint-icon-ring::after{ border-color:rgba(245,148,31,.4) !important; }
+.maint-title{ background:linear-gradient(90deg,var(--hc-gold),#161608,var(--hc-gold)) !important; background-size:200% !important; -webkit-background-clip:text !important; background-clip:text !important; -webkit-text-fill-color:transparent !important; }
+.maint-subtitle{ color:var(--hc-gold) !important; }
+.maint-fun-badge{ background:#fbf9f2 !important; border:1.5px solid #000 !important; color:var(--muted) !important; }
+.maint-text{ color:var(--text) !important; }
+.maint-countdown-wrap{ background:#fbf9f2 !important; border:2px solid var(--hc-line) !important; border-radius:16px !important; }
+.maint-countdown-label{ color:var(--muted) !important; }
+.maint-cd-num{ background:linear-gradient(135deg,rgba(245,148,31,.18),rgba(255,221,107,.25)) !important; border:2px solid var(--hc-line) !important; border-radius:12px !important; color:#161608 !important; box-shadow:2px 2px 0 rgba(0,0,0,.9) !important; text-shadow:none !important; }
+.maint-cd-label{ color:var(--muted) !important; }
+.maint-cd-sep{ color:var(--hc-gold) !important; text-shadow:none !important; }
+.maint-schedule{ background:#fbf9f2 !important; border:2px solid var(--hc-line) !important; border-radius:12px !important; color:var(--muted) !important; }
+.maint-schedule-key{ color:var(--muted) !important; }
+.maint-schedule-val{ color:var(--hc-gold) !important; }
+.maint-progress{ background:rgba(0,0,0,.08) !important; }
+.maint-eta{ color:var(--muted) !important; }
+.maint-quicktips-label{ color:var(--muted) !important; }
+.maint-qt-btn{ border:2px solid var(--hc-line) !important; background:#fbf9f2 !important; color:#161608 !important; border-radius:12px !important; box-shadow:2px 2px 0 rgba(0,0,0,.9) !important; }
+.maint-qt-btn:hover{ background:var(--hc-gold3) !important; transform:translate(-1px,-1px) !important; box-shadow:3px 3px 0 rgba(0,0,0,.9) !important; }
+
+/* ── BETA & REDEEM & AD ── */
+.beta-box{ background:#ffffff !important; border:3px solid var(--hc-line) !important; border-radius:26px !important; box-shadow:var(--hc-shadow-lg) !important; }
+.beta-title{ color:var(--text) !important; }
+.beta-sub{ color:var(--hc-gold) !important; }
+.beta-desc{ color:var(--muted) !important; }
+.beta-badge{ background:#fbf9f2 !important; border:1.5px solid #000 !important; border-radius:999px !important; color:var(--text) !important; }
+.beta-ok-btn{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; color:#1a1400 !important; border:2.5px solid var(--hc-line) !important; box-shadow:3px 3px 0 rgba(0,0,0,.9) !important; border-radius:14px !important; }
+.ad-box{ background:#ffffff !important; border:3px solid var(--hc-line) !important; box-shadow:var(--hc-shadow-lg) !important; }
+.ad-badge{ background:var(--hc-gold) !important; border:2px solid var(--hc-line) !important; color:#1a1400 !important; }
+.redeem-box{ background:#ffffff !important; border:3px solid var(--hc-line) !important; border-radius:26px !important; box-shadow:var(--hc-shadow-lg) !important; }
+.redeem-title{ background:none !important; -webkit-background-clip:initial !important; background-clip:initial !important; -webkit-text-fill-color:var(--hc-gold) !important; color:var(--hc-gold) !important; }
+.redeem-sub{ color:var(--muted) !important; }
+.redeem-input{ border:2px solid #000 !important; background:#fbf9f2 !important; color:var(--text) !important; border-radius:12px !important; }
+.redeem-input:focus{ border-color:var(--hc-gold) !important; }
+.redeem-btn{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; color:#1a1400 !important; border:2.5px solid var(--hc-line) !important; border-radius:12px !important; box-shadow:3px 3px 0 rgba(0,0,0,.9) !important; }
+
+/* ── DRAWER (sidebar) ── */
+#drawer{ background:#ffffff !important; border-right:3px solid var(--hc-line) !important; }
+.drawer-header{ background:#fbf9f2 !important; border-bottom:2px solid var(--hc-line) !important; }
+.drawer-logo-txt{ color:var(--text) !important; -webkit-text-fill-color:var(--text) !important; background:none !important; }
+.drawer-clock{ color:#161608 !important; }
+.drawer-clock-date{ color:var(--muted) !important; }
+.drawer-item{ color:var(--muted) !important; border-radius:12px !important; border:1.5px solid transparent !important; }
+.drawer-item:hover{ background:#fbf9f2 !important; border-color:#000 !important; color:#161608 !important; }
+.drawer-item.active-page{ background:var(--hc-gold3) !important; border:2px solid var(--hc-line) !important; color:#161608 !important; font-weight:700 !important; }
+.drawer-sep{ background:rgba(0,0,0,.12) !important; }
+.drawer-section-label{ color:var(--muted) !important; }
+.drawer-footer{ background:#fbf9f2 !important; border-top:2px solid var(--hc-line) !important; }
+.drawer-status{ color:var(--success) !important; }
+.drawer-status-dot{ background:var(--success) !important; box-shadow:0 0 6px var(--success) !important; }
+.chat-new-btn{ background:#fbf9f2 !important; border:2px dashed var(--hc-line) !important; color:#161608 !important; border-radius:12px !important; }
+.chat-new-btn:hover{ background:var(--hc-gold3) !important; }
+.chat-history-label{ color:var(--muted) !important; }
+#drawerOverlay{ background:rgba(0,0,0,.4) !important; }
+
+/* ── HOME / CHAT PANEL BG ── */
+.left-panel{ background:var(--bg) !important; }
+#page-home{ background:var(--bg) !important; }
+.pages{ background:var(--bg) !important; }
+
+/* ── HEADER CHAT (fz-header) — kotak putih ── */
+.fz-header{ background:#ffffff !important; border:2.5px solid var(--hc-line) !important; border-radius:16px !important; box-shadow:var(--hc-shadow) !important; }
+.fz-logo-box{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; border:2px solid var(--hc-line) !important; color:#1a1400 !important; }
+.fz-header-name{ color:var(--text) !important; }
+.fz-accent{ color:var(--hc-gold) !important; }
+.fz-header-sub{ color:var(--muted) !important; }
+.fz-hbtn{ border-radius:999px !important; font-weight:700 !important; }
+.fz-hbtn-green{ background:rgba(22,163,74,.12) !important; border:2px solid #16a34a !important; color:#16a34a !important; }
+.fz-hbtn-purple{ background:var(--hc-gold3) !important; border:2px solid var(--hc-line) !important; color:#1a1400 !important; }
+.hamburger-btn{ background:var(--hc-gold) !important; border:2px solid var(--hc-line) !important; border-radius:10px !important; box-shadow:2px 2px 0 rgba(0,0,0,.9) !important; }
+.hamburger-btn span{ background:#1a1400 !important; }
+
+/* ── WELCOME + QUICK ACTIONS ── */
+.fz-welcome::before{ display:none !important; }
+.fz-welcome-logo{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; border:3px solid var(--hc-line) !important; box-shadow:3px 3px 0 rgba(0,0,0,.9) !important; color:#1a1400 !important; }
+.fz-welcome-title{ color:var(--text) !important; }
+.fz-welcome-desc{ color:var(--muted) !important; }
+.fz-quick-btn{ background:#ffffff !important; border:2.5px solid var(--hc-line) !important; border-radius:16px !important; box-shadow:3px 3px 0 rgba(0,0,0,.9) !important; color:var(--text) !important; transition:transform .15s,box-shadow .15s !important; }
+.fz-quick-btn:hover{ transform:translate(-2px,-2px) !important; box-shadow:5px 5px 0 rgba(0,0,0,.9) !important; border-color:var(--hc-gold) !important; }
+.fz-quick-icon{ color:var(--hc-gold) !important; }
+
+/* ── CHAT BUBBLE — AI (kotak putih) vs USER (kotak kuning solid) ── */
+.chat-messages{ background:var(--bg) !important; }
+.avatar{ background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important; border:2px solid var(--hc-line) !important; box-shadow:2px 2px 0 rgba(0,0,0,.9) !important; color:#1a1400 !important; }
+.avatar.user{ background:#161608 !important; border:2px solid var(--hc-line) !important; color:#ffdd6b !important; }
+.bubble{ border-radius:14px !important; }
+.message.ai .bubble{
+  background:#ffffff !important;
+  border:2.5px solid var(--hc-line) !important;
+  border-top-left-radius:4px !important;
+  color:var(--text) !important;
+  box-shadow:3px 3px 0 rgba(0,0,0,.9) !important;
+}
+.message.user .bubble{
+  background:var(--hc-gold3) !important;
+  border:2.5px solid var(--hc-line) !important;
+  border-top-right-radius:4px !important;
+  color:#1a1400 !important;
+  box-shadow:3px 3px 0 rgba(0,0,0,.9) !important;
+}
+.ai-name-badge{ color:var(--hc-gold) !important; border-bottom-color:rgba(0,0,0,.12) !important; }
+.ai-verified-icon{ background:#161608 !important; box-shadow:none !important; }
+.msg-time{ color:var(--muted) !important; }
+.msg-copy-btn{ border-radius:8px !important; border:1.5px solid rgba(0,0,0,.15) !important; background:#fbf9f2 !important; color:var(--muted) !important; }
+.msg-copy-btn:hover{ border-color:var(--hc-gold) !important; color:#161608 !important; background:var(--hc-gold3) !important; }
+.message.user .msg-copy-btn{ border-color:rgba(0,0,0,.2) !important; }
+.msg-copy-btn.copied{ border-color:var(--success) !important; color:var(--success) !important; background:rgba(22,163,74,.08) !important; }
+
+/* ── CHAT INPUT ── */
+.fz-input-area{ background:transparent !important; }
+.fz-disclaimer{ color:var(--muted) !important; }
+.fz-console-btn{ border:2px solid var(--hc-line) !important; border-radius:10px !important; color:var(--muted) !important; background:#fbf9f2 !important; }
+.hctb-badge{ background:var(--hc-gold) !important; color:#1a1400 !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   FIX: hapus semua background/border hitam sisa tema lama
+   — bottom nav, chat input bar, overlay gelap Update/Save/Info —
+   disamakan putih/krem senada tema HC (putih border hitam)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── BOTTOM NAV (Home/Update/Save/Info) — putih, bukan hitam ── */
+.bottom-nav{
+  background:#ffffff !important;
+  border-top:2.5px solid var(--hc-line) !important;
+  box-shadow:0 -2px 0 rgba(0,0,0,.06) !important;
+  backdrop-filter:none !important;
+}
+.nav-item{ color:var(--muted) !important; border-top-color:transparent !important; }
+.nav-item.active{ color:var(--hc-gold) !important; border-top-color:var(--hc-gold) !important; }
+.nav-item.active i{ text-shadow:none !important; }
+.nav-item:hover{ color:var(--hc-gold) !important; }
+.nav-item::after{ background:var(--hc-gold) !important; }
+.nav-badge{ background:var(--accent2) !important; color:#fff !important; }
+
+/* ── CHAT INPUT AREA — putih penuh, bukan hitam/navy ── */
+.fz-input-area{
+  background:#ffffff !important;
+  border-top:2px solid var(--hc-line) !important;
+}
+.fz-input-bar{
+  background:#fbf9f2 !important;
+  border:2px solid var(--hc-line) !important;
+  border-radius:18px !important;
+  box-shadow:2px 2px 0 rgba(0,0,0,.9) !important;
+}
+.fz-textarea{ background:transparent !important; color:var(--text) !important; }
+.fz-textarea::placeholder{ color:var(--muted) !important; }
+.fz-attach-btn{ color:var(--muted) !important; background:transparent !important; }
+.fz-attach-btn:hover,.fz-voice-btn:hover{ color:#1a1400 !important; background:var(--hc-gold3) !important; }
+.fz-attach-menu{ background:#ffffff !important; border:2px solid var(--hc-line) !important; box-shadow:var(--hc-shadow) !important; }
+.fz-attach-opt{ color:var(--text) !important; }
+.fz-attach-opt:hover{ background:#fbf9f2 !important; }
+.fz-send-btn{
+  background:linear-gradient(135deg,var(--hc-gold),var(--hc-gold2)) !important;
+  box-shadow:2px 2px 0 rgba(0,0,0,.9) !important;
+  color:#1a1400 !important;
+  animation:none !important;
+}
+.fz-send-btn:hover{ background:linear-gradient(135deg,var(--hc-gold2),var(--hc-gold)) !important; }
+.fz-disclaimer{ color:var(--muted) !important; }
+.fz-console-btn{ background:#fbf9f2 !important; border:2px solid var(--hc-line) !important; color:var(--muted) !important; }
+.fz-console-btn:hover{ border-color:var(--hc-gold) !important; color:#161608 !important; }
+
+/* ── UPDATE / SAVE / INFO — buang overlay gelap di belakang konten ── */
+#page-update::after,
+#page-save::after,
+.info-bg-overlay{
+  background:rgba(255,255,255,.55) !important;
+}
+.update-card,.news-card,.save-card{
+  background:#ffffff !important;
+  border:2px solid var(--hc-line) !important;
+  box-shadow:2px 2px 0 rgba(0,0,0,.9) !important;
+  backdrop-filter:none !important;
+}
+.save-card-header{ border-bottom:2px solid var(--hc-line) !important; }
+.save-card-preview{ background:#fbf9f2 !important; color:var(--text) !important; }
+.save-card-actions{ border-top:2px solid var(--hc-line) !important; }
+.save-action-btn{ background:#fbf9f2 !important; border:1.5px solid var(--hc-line) !important; color:var(--text) !important; }
+.save-action-btn:hover{ border-color:var(--hc-gold) !important; color:#161608 !important; background:var(--hc-gold3) !important; }
+.save-count{ background:var(--hc-gold3) !important; border:1.5px solid var(--hc-line) !important; color:#1a1400 !important; }
+.save-header{ border-bottom:2px solid var(--hc-line) !important; }
+
+.info-section,.connect-section{
+  background:#ffffff !important;
+  border:2px solid var(--hc-line) !important;
+  box-shadow:2px 2px 0 rgba(0,0,0,.9) !important;
+  backdrop-filter:none !important;
+}
+.social-btn{ background:#fbf9f2 !important; border:1.5px solid var(--hc-line) !important; color:var(--text) !important; }
+.social-btn:hover{ background:var(--hc-gold3) !important; }
+.info-row{ border-bottom:1px solid rgba(0,0,0,.1) !important; }
+.info-hero{ border-bottom:2px solid var(--hc-line) !important; }
+.page-title{ border-bottom:2px solid var(--hc-line) !important; }
+.empty-state{ color:var(--muted) !important; }
+
+/* ── BADGE "AI ONLINE" — jadi kotak putih border hitam (bukan pil hijau transparan) ── */
+.header-badge{
+  background:#ffffff !important;
+  border:2px solid var(--hc-line) !important;
+  border-radius:10px !important;
+  color:#16a34a !important;
+  box-shadow:2px 2px 0 rgba(0,0,0,.9) !important;
+  animation:none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FIX ROUND 3: teks "AI ONLINE" jadi kuning, badge² bulat jadi
+   kotak putih border hitam (Beta Testing, Maintenance, Update tag,
+   tombol Follow), judul "BETA TESTING" jadi kuning solid
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── AI ONLINE — teks kuning, bukan hijau ── */
+.header-badge{
+  color:var(--hc-gold) !important;
+}
+
+/* ── BETA TESTING — judul kuning solid (buang gradient biru) ── */
+.beta-title{
+  background:none !important;
+  -webkit-background-clip:initial !important;
+  background-clip:initial !important;
+  -webkit-text-fill-color:var(--hc-gold) !important;
+  color:var(--hc-gold) !important;
+  font-size:1.05rem !important;
+}
+.beta-desc{ color:var(--text) !important; }
+
+/* ── BETA BADGE (Ocean Update, Aktif Dikembangkan, dll) — kotak putih kaya AI ONLINE ── */
+.beta-badge{
+  background:#ffffff !important;
+  border:2px solid var(--hc-line) !important;
+  border-radius:10px !important;
+  color:var(--hc-gold) !important;
+  font-weight:700 !important;
+  box-shadow:1.5px 1.5px 0 rgba(0,0,0,.9) !important;
+}
+
+/* ── MAINTENANCE BADGE — kotak putih kaya AI ONLINE ── */
+.maint-badge{
+  background:#ffffff !important;
+  color:var(--hc-gold) !important;
+  border-radius:10px !important;
+}
+.maint-fun-badge{
+  background:#ffffff !important;
+  border:1.5px solid var(--hc-line) !important;
+  border-radius:10px !important;
+  color:var(--hc-gold) !important;
+}
+
+/* ── UPDATE TAG "NEW" — kotak putih teks kuning ── */
+.update-tag{
+  border-radius:8px !important;
+}
+.update-tag.new,
+.update-tag.fix,
+.update-tag.info,
+.update-tag.hot{
+  background:#ffffff !important;
+  border:1.5px solid var(--hc-line) !important;
+  color:var(--hc-gold) !important;
+}
+
+/* ── TOMBOL FOLLOW TIKTOK/INSTAGRAM/DISCORD/WA — kotak putih teks kuning ── */
+.news-link-btn{
+  border-radius:8px !important;
+  border:1.5px solid var(--hc-line) !important;
+  background:#ffffff !important;
+  color:var(--hc-gold) !important;
+}
+.news-link-btn.tiktok,
+.news-link-btn.ig,
+.news-link-btn.discord,
+.news-link-btn.wa,
+.news-link-btn.link{
+  border-color:var(--hc-line) !important;
+  color:var(--hc-gold) !important;
+}
+.news-link-btn:hover{
+  background:var(--hc-gold3) !important;
+  color:#1a1400 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FIX ROUND 4: background maintenance masih biru, border badge
+   masih bulat, ganti sisa emoji jadi icon FA warna kuning
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── BUANG BIRU DI BELAKANG MAINTENANCE — full putih/krem, ga transparan ── */
+#maintOverlay{
+  background:#f5f2e8 !important;
+}
+.maint-bg-glass{
+  background:#f5f2e8 !important;
+  backdrop-filter:blur(6px) !important;
+  -webkit-backdrop-filter:blur(6px) !important;
+}
+.maint-orb{ display:none !important; }
+
+/* ── BORDER BADGE — dipertegas jadi kotak, radius lebih kecil ── */
+.header-badge,
+.beta-badge,
+.maint-badge,
+.maint-fun-badge,
+.update-tag.new,
+.update-tag.fix,
+.update-tag.info,
+.update-tag.hot,
+.news-link-btn{
+  border-radius:6px !important;
+}
+.maint-badge{
+  border:2px solid var(--hc-line) !important;
+}
+.maint-fun-badge{
+  border:2px solid var(--hc-line) !important;
+}
+
+/* ── ICON GEAR / CLOCK / LIGHTBULB / WRENCH / HOURGLASS / BOLT — kuning, ga biru lagi ── */
+.maint-icon-inner{
+  font-size:2.6rem !important;
+  color:var(--hc-gold) !important;
+  animation:none !important;
+  filter:none !important;
+}
+.maint-countdown-label i,
+.maint-quicktips-label i,
+.maint-eta i{
+  color:var(--hc-gold) !important;
+}
+
+/* ── BUANG BIRU DI BELAKANG POPUP PROMO & INFO — jadi terang/putih ── */
+#adOverlay{
+  background:rgba(245,242,232,.75) !important;
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+}

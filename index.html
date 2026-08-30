@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>HANAMORI CALYX AI v1.1</title>
+<title>HANAMORI CALYX AI v1.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- Google Analytics -->
@@ -73,7 +73,7 @@
     <div style="position:absolute;bottom:0;right:0;width:40px;height:40px;border-bottom:2px solid rgba(124,58,237,.5);border-right:2px solid rgba(124,58,237,.5);border-radius:0 0 32px 0;pointer-events:none"></div>
     <div class="maint-badge"><i class="fa-solid fa-triangle-exclamation"></i> SISTEM MAINTENANCE</div>
     <div class="maint-icon-ring">
-      <span class="maint-icon-inner">⚙️</span>
+      <i class="fa-solid fa-gear maint-icon-inner"></i>
     </div>
     <div class="maint-title">MAINTENANCE</div>
     <div class="maint-subtitle">◈ UPGRADE IN PROGRESS ◈</div>
@@ -85,7 +85,7 @@
     <div class="maint-text" id="maintText"></div>
     <!-- COUNTDOWN -->
     <div class="maint-countdown-wrap">
-      <div class="maint-countdown-label">🕐 Selesai Dalam</div>
+      <div class="maint-countdown-label"><i class="fa-regular fa-clock"></i> Selesai Dalam</div>
       <div class="maint-countdown-timer">
         <div class="maint-cd-unit">
           <div class="maint-cd-num" id="cdHours">00</div>
@@ -117,7 +117,7 @@
     <div class="maint-progress"><div class="maint-progress-bar" id="maintProgressBar" style="width:0%"></div></div>
     <div class="maint-eta" id="maintEta">Menghitung...</div>
     <!-- QUICK TIPS BUTTONS -->
-    <div class="maint-quicktips-label">💡 Sambil Nunggu, Coba Ini:</div>
+    <div class="maint-quicktips-label"><i class="fa-solid fa-lightbulb"></i> Sambil Nunggu, Coba Ini:</div>
     <div class="maint-quicktips-row">
       <button class="maint-qt-btn" onclick="maintCopyTip('Buatkan script Fly GUI Roblox Studio dengan toggle button')"><i class="fa-solid fa-plane"></i> Script Fly Roblox</button>
       <button class="maint-qt-btn" onclick="maintCopyTip('Buatkan website landing page keren dengan HTML CSS JS')"><i class="fa-solid fa-globe"></i> Website Keren</button>
@@ -136,19 +136,18 @@
     <!-- Ocean bubble decorations -->
     <div style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,255,.15),transparent 70%);pointer-events:none"></div>
     <div style="position:absolute;bottom:20px;right:-10px;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(0,150,200,.1),transparent 70%);pointer-events:none"></div>
-    <div class="beta-icon">🌊</div>
     <div class="beta-title">BETA TESTING</div>
     <div class="beta-sub">◈ HC COMMUNITY v5.0 ◈</div>
     <div class="beta-desc">
-      Website ini masih dalam tahap <strong style="color:#00e5ff">Beta Testing</strong> — fitur terus dikembangkan setiap saat. Ada bug? Kabarin dev ya! Makasih udah jadi bagian dari <strong style="color:#00c8ff">HC Community</strong> 🙏
+      Website ini masih dalam tahap <strong style="color:#ffc933">Beta Testing</strong> — fitur terus dikembangkan setiap saat. Ada bug? Kabarin dev ya! Makasih udah jadi bagian dari <strong style="color:#f5b400">HC Community</strong>
     </div>
     <div class="beta-badges">
-      <span class="beta-badge">🌊 Ocean Update</span>
-      <span class="beta-badge">⚡ Aktif Dikembangkan</span>
-      <span class="beta-badge">🐛 Bug Mungkin Ada</span>
-      <span class="beta-badge">🔥 Fitur Baru Segera</span>
+      <span class="beta-badge">Ocean Update</span>
+      <span class="beta-badge">Aktif Dikembangkan</span>
+      <span class="beta-badge">Bug Mungkin Ada</span>
+      <span class="beta-badge">Fitur Baru Segera</span>
     </div>
-    <button class="beta-ok-btn" onclick="closeBetaOverlay()">Siap, Gas! 🌊🚀</button>
+    <button class="beta-ok-btn" onclick="closeBetaOverlay()">Siap, Gas!</button>
   </div>
 </div>
 
@@ -266,6 +265,7 @@
 
     <!-- HOME -->
     <div class="page active" id="page-home">
+      <div class="hc-gold-particles" id="hcGoldParticles"></div>
       <div class="home-grid">
         <!-- Chat Panel -->
         <div class="left-panel">
@@ -291,7 +291,7 @@
           <div class="fz-welcome" id="fzWelcome">
             <div class="fz-welcome-logo" id="fzWelcomeLogo"><img id="fzWelcomeLogoImg" src="" alt="HC"><span id="fzWelcomeLogoTxt">HC</span></div>
             <h1 class="fz-welcome-title"><span class="fz-accent">HANAMORI</span> CALYX AI</h1>
-            <p class="fz-welcome-desc">Asisten AI cerdas oleh <span class="fz-accent">Renzzz</span>. Bisa chat, kirim gambar, script Roblox, dan banyak lagi.</p>
+            <p class="fz-welcome-desc">Asisten AI cerdas oleh <span class="fz-accent">Cik x Raiyka</span>. Bisa chat, kirim gambar, script Roblox, dan banyak lagi.</p>
             <div class="fz-quick-grid">
               <button class="fz-quick-btn" onclick="hcQuickSend('Aku mau belajar ngoding dari nol, ajarin aku step by step ya dengan bahasa yang gampang dimengerti')">
                 <i class="fa-solid fa-code fz-quick-icon"></i><span>Belajar Ngoding</span>
@@ -346,7 +346,7 @@
               <button id="hcConsoleToggleBtn" onclick="HC_CONSOLE.toggle()" class="fz-console-btn">
                 <span>▶_</span> CONSOLE <span class="hctb-badge" id="hctbBadge">0</span>
               </button>
-              <span class="fz-disclaimer">HANAMORI CALYX bisa salah, verifikasi info penting ya.</span>
+              <span class="fz-disclaimer"></span>
             </div>
             <!-- Main input bar -->
             <div class="fz-input-bar">
@@ -357,13 +357,13 @@
               <!-- Attach popup menu -->
               <div class="fz-attach-menu" id="fzAttachMenu">
                 <button onclick="document.getElementById('inputImage').click();closeAttachMenu()" class="fz-attach-opt">
-                  <i class="fa-solid fa-image" style="color:#00d4ff"></i> Foto
+                  <i class="fa-solid fa-image" style="color:#f5941f"></i> Foto
                 </button>
                 <button onclick="document.getElementById('inputVideo').click();closeAttachMenu()" class="fz-attach-opt">
-                  <i class="fa-solid fa-video" style="color:#ff4d6d"></i> Video
+                  <i class="fa-solid fa-video" style="color:#c47a00"></i> Video
                 </button>
                 <button onclick="document.getElementById('inputFile').click();closeAttachMenu()" class="fz-attach-opt">
-                  <i class="fa-solid fa-file-arrow-up" style="color:#a78bfa"></i> File
+                  <i class="fa-solid fa-file-arrow-up" style="color:#161608"></i> File
                 </button>
               </div>
               <textarea class="fz-textarea prompt-input" id="promptInput" placeholder="Ketik pesan..." rows="1" onkeydown="handleKey(event)" oninput="fzAutoResize(this)"></textarea>
@@ -423,7 +423,7 @@
         </div>
         <div class="info-dev-name" id="devName">Rahman X Cika
           <!-- Centang biru inline juga -->
-          <svg viewBox="0 0 24 24" width="18" height="18" style="flex-shrink:0;fill:#1d9bf0;filter:drop-shadow(0 0 4px rgba(29,155,240,.5))" title="Terverifikasi">
+          <svg viewBox="0 0 24 24" width="18" height="18" style="flex-shrink:0;fill:#f5941f;filter:none" title="Terverifikasi">
             <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91-1.01-1.01-2.52-1.27-3.91-.81C14.67 2.88 13.43 2 12 2s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81-1.01 1.01-1.27 2.52-.81 3.91C2.88 9.33 2 10.57 2 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91 1.01 1.01 2.52 1.27 3.91.81C9.33 21.12 10.57 22 12 22s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81 1.01-1.01 1.27-2.52.81-3.91C21.12 14.67 22 13.43 22 12h.25zm-4.07 2.61l-5.34 5.28-2.87-2.87a.75.75 0 1 0-1.06 1.06l3.4 3.4a.75.75 0 0 0 1.06 0l5.87-5.81a.75.75 0 1 0-1.06-1.06z"/>
           </svg>
         </div>
@@ -432,7 +432,7 @@
       </div>
       <div class="info-section">
         <div class="info-section-title"><i class="fa-solid fa-circle-info"></i> Informasi Project</div>
-        <div class="info-row-desc"><strong>HANAMORI CALYX AI v5.0</strong> — AI expert Roblox Studio serba bisa: Chat Tag, Fly GUI, Hotbar, Admin Panel, Freecam, Music Player, Sprint, Overhead, dan semua script GUI. Coding lengkap, ngobrol, website, matematika, voice input, multi-script, anti-jailbreak ultra. By HANAMORI CALYX AI.</div>
+        <div class="info-row-desc"><strong>HANAMORI CALYX AI v1.2</strong> — AI expert Roblox Studio serba bisa: Chat Tag, Fly GUI, Hotbar, Admin Panel, Freecam, Music Player, Sprint, Overhead, dan semua script GUI. Coding lengkap, ngobrol, website, matematika, voice input, multi-script, anti-jailbreak ultra. By HANAMORI CALYX AI.</div>
       </div>
       <div class="info-section">
         <div class="info-section-title"><i class="fa-solid fa-code"></i> Spesifikasi Teknis</div>
