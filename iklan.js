@@ -21,14 +21,24 @@ const IKLAN_CFG = {
   ADS_LIST: [
 
     // ─── TAMBAH IKLAN BARU DI SINI ───
-    // {
-    //   type: "image",
-    //   title: "🎁 Nama Iklan Baru",
-    //   text: "Deskripsi iklan kamu di sini.",
-    //   media_url: "https://link-gambar.com/foto.jpg",
-    //   cta_buttons: [
-    //     { type: "wa", url: "https://wa.me/...", label: "Hubungi WA" },
-    //   ]
-    // },
+     {
+      type: "image",
+     title: "FOLLOW SALURAN DEV",
+      text: "TEMBUSIN 3K FOLLOWERS",
+      media_url: "https://files.catbox.moe/lbhaap.jpg",
+      cta_buttons: [
+        { type: "tiktok", url: "https://whatsapp.com/channel/0029Vb5aoKwEwEjpsmaQol3A", label: "SALURAN" },
+      ]
+     },
+
+     {
+      type: "image",
+     title: "FOLLOW INFO HC AI",
+      text: "BERISI TENTANG INFORMASI HC AI",
+      media_url: "https://files.catbox.moe/w7ltnw.jpg",
+      cta_buttons: [
+        { type: "tiktok", url: "https://whatsapp.com/channel/0029VbBs1ug5q08UkVxnro3w", label: "SALURAN" },
+      ]
+     },
   ],
 };
