@@ -6,10 +6,10 @@
 ================================================================ */
 const CFG = {
   // API_KEY tidak diperlukan lagi — auth ditangani server Vercel (aman!)
-  LOGO_URL:        "https://files.catbox.moe/852yt5.png",
-  AVATAR_AI_URL:   "https://files.catbox.moe/852yt5.png",
-  AVATAR_USER_URL: "https://files.catbox.moe/852yt5.png",
-  INFO_AVATAR_URL: "https://files.catbox.moe/852yt5.png",
+  LOGO_URL:        "https://files.catbox.moe/z2gypo.jpg",
+  AVATAR_AI_URL:   "https://files.catbox.moe/z2gypo.jpg",
+  AVATAR_USER_URL: "https://files.catbox.moe/z2gypo.jpg",
+  INFO_AVATAR_URL: "https://files.catbox.moe/z2gypo.jpg",
   BG_HOME:   "",
   BG_INFO:   "",
   BG_UPDATE: "",
@@ -18,6 +18,52 @@ const CFG = {
   LINK_IG:      "https://www.instagram.com/47xcikal_?igsh=MWc5NmpwY2xtYzlpcw==",
   LINK_TIKTOK:  "https://tiktok.com/@renzzzzofc18",
   LINK_DISCORD: "https://discord.gg/PFVEfKRak",
+  LINK_TELEGRAM: "",   // isi link channel/grup Telegram di sini kalau ada
+
+  // ─── HALAMAN HOME (Community/Profile) ───
+  // Semua *_URL di bawah ini boleh diisi link FOTO atau link VIDEO (.mp4/.webm/dst) — otomatis dideteksi.
+  // Kalau mau paksa, isi juga *_TYPE dengan "image" atau "video".
+  HOME_BANNER_URL: "https://files.catbox.moe/z2gypo.jpg",     // banner kecil di top bar Home (kosong = pakai teks fallback)
+  HOME_BANNER_TYPE: "",    // "" = auto-detect, atau "image" / "video"
+  HOME_CARD_BG_URL: "",    // gambar/video background di card profile & side tab (kosong = pakai AVATAR_AI_URL)
+  HOME_CARD_BG_TYPE: "",
+  INFO_AVATAR_TYPE: "",    // type untuk INFO_AVATAR_URL / avatar Home ("" = auto-detect)
+
+  /* ─── LATEST NEWS (kartu carousel di Home) ───
+   * media_url boleh foto ATAU video (.mp4/.webm/dll) — otomatis dideteksi.
+   * media_type: "" = auto-detect, atau paksa "image"/"video"
+   * link: dibuka saat kartu diklik (opsional)
+   */
+  LATEST_NEWS_LIST: [
+    {
+      media_url: "https://www.image2url.com/r2/default/videos/1788272219065-0ea4eb9e-d606-4d1e-9d8b-5d096385c023.mp4",
+      media_type: "video",
+      title: "HANAMORI CALYX AI",
+      subtitle: "Update & info terbaru seputar HC Community",
+      dev: "dev @renzzzzofc18",
+      link: "",
+    },
+        {
+      media_url: "https://files.catbox.moe/thgl22.jpg",
+      media_type: "video",
+      title: "HANAMORI CALYX AI",
+      subtitle: "Update & info terbaru seputar HC Community",
+      dev: "dev @renzzzzofc18",
+      link: "",
+    },
+  ],
+
+  /* ─── LATEST PHOTO UPDATE (kartu carousel di Home) ─── */
+  LATEST_PHOTO_LIST: [
+    {
+      media_url: "https://www.image2url.com/r2/default/videos/1788272981892-0bae0679-e1a2-41ef-8d2c-e0bf1d0a34be.mp4",
+      media_type: "video",
+      title: "NEW UPDATE UI",
+      subtitle: "last update terbaru",
+      dev: "dev @renzzzzofc18",
+      link: "",
+    },
+  ],
 
   // ─── SOSMED DI MAINTENANCE ───
   // Kosongkan yang tidak mau tampil, isi yang mau muncul
@@ -854,12 +900,61 @@ async function loadMaintFromServer() {
   checkMaint();
 }
 
+// Wallpaper video maintenance: kalau CFG.MAINT_WALLPAPER_VIDEO diisi link video
+// (.mp4/.webm/dll), dipakai jadi background overlay maintenance. Kalau kosong,
+// fallback ke gradient + orb animasi seperti biasa.
+function setMaintWallpaper() {
+  const vid = document.getElementById('maintWallpaperVideo');
+  if (!vid) return;
+  const url = (CFG.MAINT_WALLPAPER_VIDEO || '').trim();
+  if (url) {
+    if (vid.getAttribute('src') !== url) vid.src = url;
+    vid.style.display = 'block';
+  } else {
+    vid.style.display = 'none';
+    vid.removeAttribute('src');
+  }
+}
+
+// Nampilin Latest News & Latest Photo Update di layar maintenance biar
+// pengunjung ga bosen nunggu — narik data yang sama kaya di Home.
+function renderMaintFeeds() {
+  const map = [
+    { key: 'news', list: CFG.LATEST_NEWS_LIST, sectionId: 'maintNewsSection', cardId: 'maintNewsCard' },
+    { key: 'photo', list: CFG.LATEST_PHOTO_LIST, sectionId: 'maintPhotoSection', cardId: 'maintPhotoCard' },
+  ];
+  map.forEach(({ list, sectionId, cardId }) => {
+    const section = document.getElementById(sectionId);
+    const card = document.getElementById(cardId);
+    if (!section || !card) return;
+    const item = (list || []).find(x => x && (x.media_url || x.title));
+    if (!item) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    const mUrl = item.media_url || '';
+    const declaredType = item.media_type || item.type || '';
+    const isVideo = declaredType ? declaredType === 'video' : hcIsVideoUrl(mUrl);
+    const mediaHtml = mUrl
+      ? (isVideo
+          ? `<video src="${esc(mUrl)}" autoplay muted loop playsinline></video>`
+          : `<img src="${esc(mUrl)}" alt="">`)
+      : `<div class="maint-feed-fallback"><i class="fa-solid fa-image"></i></div>`;
+    card.innerHTML = `
+      ${mediaHtml}
+      <div class="maint-feed-card-info">
+        <div class="maint-feed-card-title">${esc(item.title || '')}</div>
+        ${item.subtitle ? `<div class="maint-feed-card-sub">${esc(item.subtitle)}</div>` : ''}
+      </div>`;
+  });
+}
+
 function checkMaint() {
   const t = CFG.MAINTENANCE_TEXT.trim();
   if (!t) { localStorage.removeItem(MAINT_KEY); return; }
   const overlay = document.getElementById('maintOverlay');
   overlay.classList.add('show');
   document.getElementById('maintText').textContent = t;
+  setMaintWallpaper();
+  renderMaintFeeds();
 
   // ── MANUAL MODE: tampil terus tanpa countdown ──
   if (CFG.MAINTENANCE_MODE === 'manual') {
@@ -972,11 +1067,12 @@ function closeDrawer() {
 function drawerNav(page, activeId) {
   document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active-page'));
   document.getElementById(activeId).classList.add('active-page');
-  const navMap = { home:'navHome', update:'navUpdate', save:'navSave', info:'navInfo' };
+  const navMap = { home:'navHome', chat:'navChat', save:'navSave', info:'navInfo' };
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (navMap[page]) document.getElementById(navMap[page]).classList.add('active');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
+  updateHeaderVisibility(page);
   closeDrawer();
 }
 function navTo(page, el) {
@@ -984,13 +1080,17 @@ function navTo(page, el) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   el.classList.add('active');
-  const dmMap = { home:'dmHome', update:'dmUpdate', save:'dmSave', info:'dmInfo' };
+  const dmMap = { home:'dmHome', chat:'dmChat', save:'dmSave', info:'dmInfo' };
   document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active-page'));
   if (dmMap[page]) document.getElementById(dmMap[page]).classList.add('active-page');
-  if (page === 'update') {
-    document.getElementById('updateBadge').classList.remove('show');
-    localStorage.setItem('hc_lastSeen', CFG.UPDATES.length);
-  }
+  updateHeaderVisibility(page);
+}
+// Header "HC COMMUNITY" disembunyikan di semua tab biar konsisten sama
+// tampilan Home/Save/Info (ga ada topbar dobel lagi di atas AI Chat).
+function updateHeaderVisibility(page) {
+  const header = document.getElementById('appMainHeader');
+  if (!header) return;
+  header.style.display = 'none';
 }
 
 /* ================================================================
@@ -1000,7 +1100,8 @@ window.addEventListener('DOMContentLoaded', () => {
   HC_CONSOLE.init();
   initAuth();
   applyConfig();
-  renderUpdate();
+  renderHomePage();
+  updateHeaderVisibility('home');
   renderSave();
   renderChatHistory();
   loadMaintFromServer();
@@ -1009,21 +1110,9 @@ window.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
   initVoice();
-  checkUpdateBadge();
   initBetaOverlay();
-  initAdOverlay();
   spawnGoldParticles();
 });
-
-function checkUpdateBadge() {
-  const lastSeen = parseInt(localStorage.getItem('hc_lastSeen') || '0');
-  const newCount = CFG.UPDATES.length - lastSeen;
-  const badge = document.getElementById('updateBadge');
-  if (newCount > 0 && CFG.UPDATES.length > 0) {
-    badge.textContent = newCount > 9 ? '9+' : newCount;
-    badge.classList.add('show');
-  }
-}
 
 /* ================================================================
    BETA OVERLAY
@@ -1048,199 +1137,175 @@ function closeBetaOverlay() {
 }
 
 /* ================================================================
-   AD OVERLAY — tengah layar, tanpa X, countdown next
+   MEDIA HELPER — dipakai di mana pun ada link foto, supaya bisa
+   diganti pakai link video (.mp4/.webm/.mov/.m4v/.ogg) juga.
 ================================================================ */
-let adIndex = 0;
-let adAutoTimer = null;
-let adNextCountdown = 0;
-let adNextTimer = null;
-
-function initAdOverlay() {
-  const iklanCfg = (typeof IKLAN_CFG !== 'undefined') ? IKLAN_CFG : null;
-  const adsArr = iklanCfg ? iklanCfg.ADS_LIST : (CFG.ADS || []);
-  const showAds = iklanCfg ? iklanCfg.SHOW_ADS : true;
-  if (!showAds || !adsArr || adsArr.length === 0) return;
-  const seen = sessionStorage.getItem('hc_ad_seen');
-  if (seen) return;
-  const adDelay = iklanCfg ? iklanCfg.AD_DELAY_MS : (CFG.AD_DELAY_MS || 1500);
-  const adInterval = iklanCfg ? iklanCfg.AD_AUTO_INTERVAL_MS : (CFG.AD_AUTO_INTERVAL_MS || 5000);
-  const delay = (CFG.SHOW_BETA ? 900 + 1000 : 0) + adDelay;
-  setTimeout(() => {
-    adIndex = 0;
-    renderAd(0);
-    const ov = document.getElementById('adOverlay');
-    if (ov) ov.classList.add('show');
-    HC_CONSOLE.log('AI', `Ad overlay shown (${adsArr.length} ad${adsArr.length>1?'s':''})`);
-    if (adInterval > 0 && adsArr.length > 1) {
-      adAutoTimer = setInterval(() => {
-        adIndex = (adIndex + 1) % adsArr.length;
-        renderAd(adIndex);
-      }, adInterval);
-    }
-  }, delay);
+function hcIsVideoUrl(url) {
+  if (!url) return false;
+  return /\.(mp4|webm|ogv|ogg|mov|m4v)(\?.*)?(#.*)?$/i.test(String(url).trim());
+}
+// Pasang url ke elemen <img> ATAU <video> tergantung jenis medianya.
+// type: "image" | "video" | "" (auto-detect dari ekstensi)
+function hcSetMedia(imgEl, videoEl, url, type) {
+  const isVideo = type ? type === 'video' : hcIsVideoUrl(url);
+  if (!url) {
+    if (imgEl) imgEl.style.display = 'none';
+    if (videoEl) videoEl.style.display = 'none';
+    return false;
+  }
+  if (isVideo && videoEl) {
+    if (videoEl.getAttribute('src') !== url) videoEl.src = url;
+    videoEl.style.display = 'block';
+    if (imgEl) imgEl.style.display = 'none';
+  } else if (imgEl) {
+    imgEl.src = url;
+    imgEl.style.display = 'block';
+    if (videoEl) { videoEl.style.display = 'none'; videoEl.removeAttribute('src'); }
+  }
+  return true;
 }
 
-function renderAd(idx) {
-  const iklanCfg = (typeof IKLAN_CFG !== 'undefined') ? IKLAN_CFG : null;
-  const ads = iklanCfg ? iklanCfg.ADS_LIST : (CFG.ADS || []);
-  if (!ads || !ads[idx]) return;
-  const ad = ads[idx];
-  adIndex = idx;
-  const content = document.getElementById('adContent');
-  if (!content) return;
+/* ================================================================
+   HOME FEED — Latest News, Latest Photo Update, Iklan/Promosi
+   Semua inline di halaman Home (TIDAK pakai overlay/popup lagi),
+   dan medianya boleh foto ATAU video.
+================================================================ */
+const hcFeedState = { news: { idx: 0 }, photo: { idx: 0 } };
 
+function hcFeedGetList(kind) {
+  if (kind === 'news') return CFG.LATEST_NEWS_LIST || [];
+  if (kind === 'photo') return CFG.LATEST_PHOTO_LIST || [];
+  if (kind === 'promo') {
+    const iklanCfg = (typeof IKLAN_CFG !== 'undefined') ? IKLAN_CFG : null;
+    const showAds = iklanCfg ? iklanCfg.SHOW_ADS : true;
+    if (!showAds) return [];
+    return (iklanCfg ? iklanCfg.ADS_LIST : (CFG.ADS || [])) || [];
+  }
+  return [];
+}
+
+function renderHcFeed(kind) {
+  const list = hcFeedGetList(kind).filter(x => x && (x.media_url || x.title));
+  const section = document.getElementById(kind + 'FeedSection');
+  const card = document.getElementById(kind + 'FeedCard');
+  const dots = document.getElementById(kind + 'FeedDots');
+  const count = document.getElementById(kind + 'FeedCount');
+  if (!card) return;
+  if (!list.length) { if (section) section.style.display = 'none'; return; }
+  if (section) section.style.display = '';
+
+  let idx = hcFeedState[kind].idx || 0;
+  if (idx >= list.length) idx = 0;
+  hcFeedState[kind].idx = idx;
+  const item = list[idx];
+
+  const mUrl = item.media_url || '';
+  const declaredType = item.media_type || item.type || '';
+  const isVideo = declaredType ? declaredType === 'video' : hcIsVideoUrl(mUrl);
   let mediaHtml = '';
-  if (ad.media_url) {
-    if (ad.type === 'video') {
-      mediaHtml = `<video class="ad-media-video" src="${ad.media_url}" autoplay muted loop playsinline></video>`;
-    } else if (ad.type === 'image') {
-      mediaHtml = `<img class="ad-media-img" src="${ad.media_url}" alt="ad">`;
-    }
-  }
-
-  const ctaBtns = (ad.cta_buttons || []).map(b => {
-    const icons = { wa:'fa-whatsapp', ig:'fa-instagram', tt:'fa-tiktok', dc:'fa-discord', web:'fa-globe' };
-    const icon = icons[b.type] || 'fa-link';
-    return `<a class="ad-cta-btn ${b.type}" href="${b.url}" target="_blank" rel="noopener"><i class="fa-${b.type === 'web' ? 'solid' : 'brands'} ${icon}"></i>${b.label}</a>`;
-  }).join('');
-
-  content.innerHTML = `
-    ${mediaHtml}
-    <div class="ad-title">${ad.title || ''}</div>
-    <div class="ad-text">${ad.text || ''}</div>
-    <div class="ad-cta-row">${ctaBtns}</div>
-  `;
-
-  // Nav row — hanya kalau lebih dari 1 iklan, TANPA tombol X
-  // Tombol Next: iklan pertama langsung bisa diklik (no countdown),
-  // countdown baru muncul mulai iklan ke-2 (idx >= 1)
-  const navRow = document.getElementById('adNavRow');
-  const dotsRow = document.getElementById('adDots');
-  if (ads.length > 1) {
-    const cdSec = (iklanCfg && iklanCfg.AD_NEXT_COUNTDOWN_SEC) ? iklanCfg.AD_NEXT_COUNTDOWN_SEC : 3;
-    const isFirstAd = (idx === 0);
-    if (isFirstAd) {
-      // Iklan pertama: Next langsung aktif, tidak ada countdown
-      navRow.innerHTML = `
-        <button class="ad-nav-btn" onclick="prevAd()">◀ Prev</button>
-        <span class="ad-counter">${idx + 1} / ${ads.length}</span>
-        <button class="ad-nav-btn ready" id="adNextBtn" onclick="nextAd()">Next ▶</button>`;
-    } else if (adIndex === ads.length - 1) {
-      // Iklan terakhir: tampilkan tombol Tutup dengan countdown
-      navRow.innerHTML = `
-        <button class="ad-nav-btn" onclick="prevAd()">◀ Prev</button>
-        <span class="ad-counter">${idx + 1} / ${ads.length}</span>
-        <button class="ad-nav-btn ad-close-countdown-btn" id="adNextBtn" disabled>Tutup (${cdSec}s)</button>`;
-      _startCloseCountdownAsNext(cdSec);
-    } else {
-      // Iklan ke-2 dst (bukan terakhir): Next dengan countdown
-      navRow.innerHTML = `
-        <button class="ad-nav-btn" onclick="prevAd()">◀ Prev</button>
-        <span class="ad-counter">${idx + 1} / ${ads.length}</span>
-        <button class="ad-nav-btn ad-next-btn" id="adNextBtn" disabled>Next (${cdSec}s)</button>`;
-      _startNextCountdown(cdSec);
-    }
-    dotsRow.innerHTML = ads.map((_, i) => `<div class="ad-dot ${i === idx ? 'active' : ''}" onclick="renderAd(${i})"></div>`).join('');
+  if (mUrl) {
+    mediaHtml = isVideo
+      ? `<video class="hc-feed-media" src="${esc(mUrl)}" autoplay muted loop playsinline></video>`
+      : `<img class="hc-feed-media" src="${esc(mUrl)}" alt="">`;
   } else {
-    // Single ad — show a "Tutup (3s)" button instead of X
-    const cdSec = (iklanCfg && iklanCfg.AD_NEXT_COUNTDOWN_SEC) ? iklanCfg.AD_NEXT_COUNTDOWN_SEC : 3;
-    navRow.innerHTML = `
-      <span class="ad-counter" style="flex:1;text-align:left">📣 Promo</span>
-      <button class="ad-nav-btn ad-close-countdown-btn" id="adCloseCountBtn" disabled>Tutup (${cdSec}s)</button>`;
-    dotsRow.innerHTML = '';
-    _startCloseCountdown(cdSec);
+    mediaHtml = `<div class="hc-feed-fallback"><i class="fa-solid fa-image"></i></div>`;
+  }
+  if (count) count.textContent = (idx + 1) + '/' + list.length;
+
+  const arrowsHtml = list.length > 1 ? `
+    <button class="hc-feed-arrow left" onclick="event.stopPropagation();hcFeedNav('${kind}',-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="hc-feed-arrow right" onclick="event.stopPropagation();hcFeedNav('${kind}',1)"><i class="fa-solid fa-chevron-right"></i></button>` : '';
+
+  card.innerHTML = `
+    ${mediaHtml}
+    <div class="hc-feed-text">
+      <div class="hc-feed-card-title">${esc(item.title || '')}</div>
+      ${item.subtitle ? `<div class="hc-feed-card-sub">${esc(item.subtitle)}</div>` : ''}
+      ${item.dev ? `<div class="hc-feed-card-dev"><i class="fa-solid fa-code-branch"></i>${esc(item.dev)}</div>` : ''}
+    </div>
+    ${arrowsHtml}`;
+  card.onclick = () => { if (item.link) window.open(item.link, '_blank'); };
+
+  if (dots) {
+    dots.innerHTML = list.length > 1
+      ? list.map((_, i) => `<div class="hc-feed-dot ${i === idx ? 'active' : ''}" onclick="hcFeedGoto('${kind}',${i})"></div>`).join('')
+      : '';
   }
 }
 
-function _startCloseCountdownAsNext(sec) {
-  if (adNextTimer) clearInterval(adNextTimer);
-  let remaining = sec;
-  adNextTimer = setInterval(() => {
-    remaining--;
-    const b = document.getElementById('adNextBtn');
-    if (!b) { clearInterval(adNextTimer); return; }
-    if (remaining <= 0) {
-      clearInterval(adNextTimer);
-      b.disabled = false;
-      b.textContent = 'Tutup ✕';
-      b.classList.add('ready');
-      b.onclick = closeAdOverlay;
-    } else {
-      b.textContent = `Tutup (${remaining}s)`;
-    }
-  }, 1000);
+function hcFeedNav(kind, dir) {
+  const list = hcFeedGetList(kind);
+  if (list.length < 2) return;
+  let idx = hcFeedState[kind].idx || 0;
+  idx = (idx + dir + list.length) % list.length;
+  hcFeedState[kind].idx = idx;
+  renderHcFeed(kind);
+}
+function hcFeedGoto(kind, i) {
+  hcFeedState[kind].idx = i;
+  renderHcFeed(kind);
 }
 
-function _startNextCountdown(sec) {
-  if (adNextTimer) clearInterval(adNextTimer);
-  let remaining = sec;
-  const btn = document.getElementById('adNextBtn');
-  if (!btn) return;
-  adNextTimer = setInterval(() => {
-    remaining--;
-    const b = document.getElementById('adNextBtn');
-    if (!b) { clearInterval(adNextTimer); return; }
-    if (remaining <= 0) {
-      clearInterval(adNextTimer);
-      b.disabled = false;
-      b.textContent = 'Next ▶';
-      b.classList.add('ready');
-      b.onclick = nextAd;
-    } else {
-      b.textContent = `Next (${remaining}s)`;
-    }
-  }, 1000);
+/* ── IKLAN / PROMOSI — sekarang tampil SAMPING-SAMPINGAN (horizontal
+   scroll), bukan numpuk ke bawah lagi. Semua iklan langsung dirender
+   sekaligus dalam satu baris yang bisa digeser ke samping. Tombol
+   "Hubungi WA" dihapus, cta yang dipakai: TikTok, Saluran, Website. ──*/
+function ctaIconFor(type) {
+  const map = {
+    ig: { icon: 'fa-instagram', brand: true },
+    tt: { icon: 'fa-tiktok', brand: true },
+    dc: { icon: 'fa-discord', brand: true },
+    tele: { icon: 'fa-telegram', brand: true },
+    saluran: { icon: 'fa-paper-plane', brand: false },
+    web: { icon: 'fa-globe', brand: false },
+  };
+  return map[type] || { icon: 'fa-link', brand: false };
 }
 
-function _startCloseCountdown(sec) {
-  if (adNextTimer) clearInterval(adNextTimer);
-  let remaining = sec;
-  adNextTimer = setInterval(() => {
-    remaining--;
-    const b = document.getElementById('adCloseCountBtn');
-    if (!b) { clearInterval(adNextTimer); return; }
-    if (remaining <= 0) {
-      clearInterval(adNextTimer);
-      b.disabled = false;
-      b.textContent = 'Tutup ✕';
-      b.classList.add('ready');
-      b.onclick = closeAdOverlay;
-    } else {
-      b.textContent = `Tutup (${remaining}s)`;
-    }
-  }, 1000);
+function renderPromoRow() {
+  const list = hcFeedGetList('promo').filter(x => x && (x.media_url || x.title));
+  const section = document.getElementById('promoFeedSection');
+  const row = document.getElementById('promoFeedRow');
+  const count = document.getElementById('promoFeedCount');
+  if (!row) return;
+  if (!list.length) { if (section) section.style.display = 'none'; return; }
+  if (section) section.style.display = '';
+  if (count) count.textContent = list.length + (list.length > 1 ? ' iklan' : ' iklan');
+
+  row.innerHTML = list.map((item, i) => {
+    const mUrl = item.media_url || '';
+    const declaredType = item.media_type || item.type || '';
+    const isVideo = declaredType ? declaredType === 'video' : hcIsVideoUrl(mUrl);
+    const mediaHtml = mUrl
+      ? (isVideo
+          ? `<video class="hc-feed-media" src="${esc(mUrl)}" autoplay muted loop playsinline></video>`
+          : `<img class="hc-feed-media" src="${esc(mUrl)}" alt="">`)
+      : `<div class="hc-feed-fallback"><i class="fa-solid fa-image"></i></div>`;
+
+    const ctaBtns = (item.cta_buttons || [])
+      .filter(b => b && b.type !== 'wa') // Hubungi WA dihapus dari iklan
+      .map(b => {
+        const { icon, brand } = ctaIconFor(b.type);
+        return `<a class="hc-promo-cta-btn" href="${esc(b.url)}" target="_blank" rel="noopener"><i class="fa-${brand ? 'brands' : 'solid'} ${icon}"></i>${esc(b.label || '')}</a>`;
+      }).join('');
+
+    return `
+      <div class="hc-promo-card-item">
+        <div class="hc-promo-card-num">${i + 1}</div>
+        <div class="hc-feed-card">${mediaHtml}</div>
+        <div class="hc-promo-body">
+          <div class="hc-promo-title">${esc(item.title || '')}</div>
+          ${item.text ? `<div class="hc-promo-text">${esc(item.text)}</div>` : ''}
+          ${ctaBtns ? `<div class="hc-promo-cta-row">${ctaBtns}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
 }
 
-function prevAd() {
-  const iklanCfg = (typeof IKLAN_CFG !== 'undefined') ? IKLAN_CFG : null;
-  const ads = iklanCfg ? iklanCfg.ADS_LIST : (CFG.ADS || []);
-  adIndex = (adIndex - 1 + ads.length) % ads.length;
-  renderAd(adIndex);
-  if (adAutoTimer) { clearInterval(adAutoTimer); adAutoTimer = null; }
-}
-function nextAd() {
-  const iklanCfg = (typeof IKLAN_CFG !== 'undefined') ? IKLAN_CFG : null;
-  const ads = iklanCfg ? iklanCfg.ADS_LIST : (CFG.ADS || []);
-  adIndex = (adIndex + 1) % ads.length;
-  renderAd(adIndex);
-  if (adAutoTimer) { clearInterval(adAutoTimer); adAutoTimer = null; }
-}
-function closeAdOverlay() {
-  if (adAutoTimer) clearInterval(adAutoTimer);
-  if (adNextTimer) clearInterval(adNextTimer);
-  const ov = document.getElementById('adOverlay');
-  if (!ov) return;
-  ov.style.opacity = '0';
-  ov.style.transition = 'opacity .3s ease, transform .3s ease';
-  ov.style.transform = 'scale(0.92)';
-  setTimeout(() => {
-    ov.classList.remove('show');
-    ov.style.opacity = '';
-    ov.style.transform = '';
-    ov.style.transition = '';
-  }, 320);
-  sessionStorage.setItem('hc_ad_seen', '1');
-  HC_CONSOLE.log('AI', 'Ad overlay closed by user');
+function renderHomeFeeds() {
+  renderHcFeed('news');
+  renderHcFeed('photo');
+  renderPromoRow();
 }
 
 /* ================================================================
@@ -1410,9 +1475,8 @@ function applyConfig() {
   document.getElementById('linkIG').href = CFG.LINK_IG;
   document.getElementById('linkTT').href = CFG.LINK_TIKTOK;
   document.getElementById('linkDC').href = CFG.LINK_DISCORD;
-  if (CFG.BG_HOME) document.getElementById('page-home').style.backgroundImage = `url('${CFG.BG_HOME}')`;
+  if (CFG.BG_HOME) document.getElementById('page-chat').style.backgroundImage = `url('${CFG.BG_HOME}')`;
   if (CFG.BG_INFO) document.getElementById('page-info').style.backgroundImage = `url('${CFG.BG_INFO}')`;
-  if (CFG.BG_UPDATE) document.getElementById('page-update').style.backgroundImage = `url('${CFG.BG_UPDATE}')`;
   if (CFG.BG_SAVE) document.getElementById('page-save').style.backgroundImage = `url('${CFG.BG_SAVE}')`;
 }
 
@@ -1432,45 +1496,81 @@ function showToast(msg) {
 }
 
 /* ================================================================
-   UPDATE PAGE
+   HOME PAGE (Community / Profile)
 ================================================================ */
-function renderUpdate() {
-  const list = document.getElementById('updateList');
-  const ICONS = { tiktok:'fa-tiktok', ig:'fa-instagram', discord:'fa-discord', wa:'fa-whatsapp', link:'fa-link' };
+function renderHomePage() {
+  // Avatar (pakai logo/avatar yang sama biar konsisten) — boleh foto atau video
+  const avatarUrl = CFG.INFO_AVATAR_URL || CFG.LOGO_URL || '';
+  if (avatarUrl) hcSetMedia(document.getElementById('hpAvatarImg'), document.getElementById('hpAvatarVideo'), avatarUrl, CFG.INFO_AVATAR_TYPE);
 
-  // Render NEWS
-  let html = '';
-  if (CFG.NEWS && CFG.NEWS.length) {
-    html += `<div class="news-title"><i class="fa-solid fa-newspaper"></i> BERITA TERBARU</div>`;
-    html += CFG.NEWS.map(n => `
-      <div class="news-card"><div class="news-card-body">
-        <div class="news-card-title">${esc(n.title)}</div>
-        <div class="news-card-date">📅 ${esc(n.date)}</div>
-        <div class="news-card-text">${esc(n.text)}</div>
-        ${n.links && n.links.length ? `<div class="news-links">${n.links.map(l=>`<a class="news-link-btn ${l.type}" href="${esc(l.url)}" target="_blank"><i class="fa-brands ${ICONS[l.type]||'fa-link'}"></i> ${esc(l.label||l.type)}</a>`).join('')}</div>` : ''}
-      </div></div>`).join('');
+  // Top bar banner — boleh foto atau video (mp4/webm/dll)
+  const bannerUrl = CFG.HOME_BANNER_URL || '';
+  const bannerImg = document.getElementById('hpTopBannerImg');
+  const bannerVideo = document.getElementById('hpTopBannerVideo');
+  const bannerFallback = document.getElementById('hpTopBannerFallback');
+  if (bannerUrl) {
+    hcSetMedia(bannerImg, bannerVideo, bannerUrl, CFG.HOME_BANNER_TYPE);
+    bannerFallback.style.display = 'none';
+  } else {
+    bannerImg.style.display = 'none';
+    bannerVideo.style.display = 'none';
+    bannerFallback.style.display = 'block';
   }
 
-  // Render UPDATES
-  if (!CFG.UPDATES || !CFG.UPDATES.length) {
-    if (!html) list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-bell"></i><div>Belum ada update & berita</div></div>';
-    else list.innerHTML = html;
-    return;
+  // Gambar/video background di card profile + side tab (biar nyambung kaya 1 foto)
+  const cardBgUrl = CFG.HOME_CARD_BG_URL || CFG.AVATAR_AI_URL || CFG.LOGO_URL || '';
+  const bgImgEl = document.getElementById('hpProfileBgImg');
+  const bgVideoEl = document.getElementById('hpProfileBgVideo');
+  if (cardBgUrl) {
+    const bgIsVideo = CFG.HOME_CARD_BG_TYPE ? CFG.HOME_CARD_BG_TYPE === 'video' : hcIsVideoUrl(cardBgUrl);
+    if (bgIsVideo) {
+      if (bgVideoEl.getAttribute('src') !== cardBgUrl) bgVideoEl.src = cardBgUrl;
+      bgVideoEl.style.display = 'block';
+      bgImgEl.style.backgroundImage = 'none';
+    } else {
+      bgVideoEl.style.display = 'none';
+      bgImgEl.style.backgroundImage = `url('${cardBgUrl}')`;
+    }
   }
-  if (html) html += `<div class="update-section-title"><i class="fa-solid fa-bell"></i> UPDATE LOG</div>`;
-  html += CFG.UPDATES.map(u => `
-    <div class="update-card">
-      ${u.media_url && u.media_type === 'image' ? `<img class="update-card-img" src="${esc(u.media_url)}" alt="">` : ''}
-      ${u.media_url && u.media_type === 'video' ? `<video class="update-card-video" src="${esc(u.media_url)}" controls playsinline></video>` : ''}
-      <div class="update-card-body">
-        <span class="update-tag ${u.tag}">${u.tag.toUpperCase()}</span>
-        <div class="update-card-title">${esc(u.title)}</div>
-        <div class="update-card-date">📅 ${esc(u.date)}</div>
-        <div class="update-card-text">${esc(u.text)}</div>
-        ${u.links && u.links.length ? `<div class="news-links">${u.links.map(l=>`<a class="news-link-btn ${l.type}" href="${esc(l.url)}" target="_blank"><i class="fa-brands ${ICONS[l.type]||'fa-link'}"></i> ${esc(l.label||l.type)}</a>`).join('')}</div>` : ''}
-      </div>
-    </div>`).join('');
-  list.innerHTML = html;
+
+  // Latest News / Latest Photo Update / Iklan & Promosi — inline, no overlay
+  renderHomeFeeds();
+
+  // Nama & versi
+  document.getElementById('hpName').textContent = 'HANAMORI CALYX AI';
+  document.getElementById('hpVersionBadge').textContent = CFG.APP_VERSION || 'V1.0';
+  document.getElementById('hpDateBadge').textContent = getDateOnly();
+  document.getElementById('hpRole').textContent = 'Roblox Expert • Anti-Jailbreak • Smart';
+
+  // Sosmed row
+  document.getElementById('hpTiktok').href = CFG.LINK_TIKTOK || '#';
+  document.getElementById('hpTelegram').href = CFG.LINK_TELEGRAM || '#';
+  if (!CFG.LINK_TELEGRAM) document.getElementById('hpTelegram').classList.add('hp-sosmed-disabled');
+  document.getElementById('hpSaluran').href = CFG.LINK_WA || '#';
+
+  // Info Update preview — ambil item terbaru dari NEWS/UPDATES
+  const latest = (CFG.UPDATES && CFG.UPDATES[0]) || (CFG.NEWS && CFG.NEWS[0]) || null;
+  const previewEl = document.getElementById('hpInfoUpdateText');
+  if (latest) {
+    previewEl.textContent = latest.title + (latest.text ? ' — ' + latest.text : '');
+  } else {
+    previewEl.textContent = 'Belum ada info update terbaru.';
+  }
+}
+
+function hpOpenInfoUpdate() {
+  const latest = (CFG.UPDATES && CFG.UPDATES[0]) || (CFG.NEWS && CFG.NEWS[0]) || null;
+  const url = (latest && latest.links && latest.links[0] && latest.links[0].url) || CFG.LINK_WA;
+  if (url) window.open(url, '_blank');
+}
+
+function hpOpenSettings() {
+  const navInfoEl = document.getElementById('navInfo');
+  if (navInfoEl) navInfoEl.click();
+}
+
+function getDateOnly() {
+  return new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
 }
 
 /* ================================================================

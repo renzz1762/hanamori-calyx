@@ -58,6 +58,8 @@
 
 <!-- ══ MAINTENANCE ══ -->
 <div id="maintOverlay">
+  <!-- Wallpaper: video kalau ada, fallback ke gradient/orbs -->
+  <video id="maintWallpaperVideo" class="maint-wallpaper-video" src="" autoplay muted loop playsinline style="display:none"></video>
   <div class="maint-bg-glass"></div>
   <div class="maint-bg-anim">
     <div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div>
@@ -126,6 +128,16 @@
     </div>
     <div id="maintQtToast" class="maint-qt-toast" style="display:none"></div>
     <div id="maintSocmedRow" style="display:none;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:2"></div>
+
+    <!-- Latest News & Photo Update — biar ga bosen nunggu maintenance -->
+    <div class="maint-feed-section" id="maintNewsSection" style="display:none">
+      <div class="maint-feed-title"><i class="fa-solid fa-newspaper"></i> Latest News</div>
+      <div class="maint-feed-card" id="maintNewsCard"></div>
+    </div>
+    <div class="maint-feed-section" id="maintPhotoSection" style="display:none">
+      <div class="maint-feed-title"><i class="fa-solid fa-images"></i> Latest Photo Update</div>
+      <div class="maint-feed-card" id="maintPhotoCard"></div>
+    </div>
   </div>
 </div>
 
@@ -137,7 +149,7 @@
     <div style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,255,.15),transparent 70%);pointer-events:none"></div>
     <div style="position:absolute;bottom:20px;right:-10px;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(0,150,200,.1),transparent 70%);pointer-events:none"></div>
     <div class="beta-title">BETA TESTING</div>
-    <div class="beta-sub">◈ HC COMMUNITY v5.0 ◈</div>
+    <div class="beta-sub">◈ HC COMMUNITY V1.2◈</div>
     <div class="beta-desc">
       Website ini masih dalam tahap <strong style="color:#ffc933">Beta Testing</strong> — fitur terus dikembangkan setiap saat. Ada bug? Kabarin dev ya! Makasih udah jadi bagian dari <strong style="color:#f5b400">HC Community</strong>
     </div>
@@ -148,16 +160,6 @@
       <span class="beta-badge">Fitur Baru Segera</span>
     </div>
     <button class="beta-ok-btn" onclick="closeBetaOverlay()">Siap, Gas!</button>
-  </div>
-</div>
-
-<!-- ══ AD OVERLAY — tengah, tanpa X ══ -->
-<div id="adOverlay">
-  <div class="ad-box">
-    <div class="ad-badge">📣 PROMO &amp; INFO</div>
-    <div id="adContent"></div>
-    <div id="adNavRow" class="ad-nav-row"></div>
-    <div id="adDots" class="ad-dots-row"></div>
   </div>
 </div>
 
@@ -195,8 +197,8 @@
   </div>
   <div class="drawer-menu">
     <div class="drawer-section-label">Navigasi</div>
-    <div class="drawer-item active-page" id="dmHome" onclick="drawerNav('home','dmHome')"><i class="fa-solid fa-house"></i>Home — AI Chat</div>
-    <div class="drawer-item" id="dmUpdate" onclick="drawerNav('update','dmUpdate')"><i class="fa-solid fa-bell"></i>New Update</div>
+    <div class="drawer-item active-page" id="dmHome" onclick="drawerNav('home','dmHome')"><i class="fa-solid fa-house"></i>Home</div>
+    <div class="drawer-item" id="dmChat" onclick="drawerNav('chat','dmChat')"><i class="fa-solid fa-comment-dots"></i>AI Chat</div>
     <div class="drawer-item" id="dmSave" onclick="drawerNav('save','dmSave')"><i class="fa-solid fa-floppy-disk"></i>Save Script</div>
     <div class="drawer-item" id="dmInfo" onclick="drawerNav('info','dmInfo')"><i class="fa-solid fa-circle-info"></i>Info &amp; Developer</div>
     <div class="drawer-sep"></div>
@@ -243,7 +245,7 @@
 </div>
 
 <div class="app">
-  <header>
+  <header id="appMainHeader" style="display:none">
     <div class="logo-wrap">
       <div class="logo-icon" id="headerLogo">
         <span id="headerLogoEmoji">🎮</span>
@@ -263,8 +265,98 @@
 
   <div class="pages">
 
-    <!-- HOME -->
+    <!-- HOME (Community / Profile) -->
     <div class="page active" id="page-home">
+      <div class="hp-bg-overlay"></div>
+
+      <!-- TOP BAR: hamburger - banner - gear -->
+      <div class="hp-topbar">
+        <button class="hp-icon-btn" onclick="toggleDrawer()" title="Menu"><i class="fa-solid fa-bars"></i></button>
+        <div class="hp-topbanner">
+          <img id="hpTopBannerImg" src="" alt="Banner" style="display:none">
+          <video id="hpTopBannerVideo" src="" style="display:none" autoplay muted loop playsinline></video>
+          <span id="hpTopBannerFallback">HANAMORI CALYX AI</span>
+        </div>
+        <button class="hp-icon-btn" onclick="hpOpenSettings()" title="Pengaturan"><i class="fa-solid fa-gear"></i></button>
+      </div>
+
+      <div class="hp-profile-row">
+        <div class="hp-profile-bgimg" id="hpProfileBgImg"></div>
+        <video class="hp-profile-bgimg" id="hpProfileBgVideo" style="display:none" autoplay muted loop playsinline></video>
+        <div class="hp-profile-card">
+          <div class="hp-profile-main">
+            <div class="hp-avatar-wrap">
+              <div class="hp-avatar">
+                <img id="hpAvatarImg" src="" alt="Avatar">
+                <video id="hpAvatarVideo" style="display:none" autoplay muted loop playsinline></video>
+              </div>
+            </div>
+            <div class="hp-profile-info">
+              <div class="hp-name" id="hpName">HANAMORI CALYX AI</div>
+              <div class="hp-badges">
+                <span class="hp-badge hp-badge-orange" id="hpVersionBadge">V1.2</span>
+                <span class="hp-badge hp-badge-pink" id="hpDateBadge">01 Sep 2026</span>
+              </div>
+              <div class="hp-role" id="hpRole">Roblox Expert • Anti-Jailbreak</div>
+            </div>
+          </div>
+        </div>
+        <div class="hp-side-tab"><span>HC</span></div>
+      </div>
+
+      <div class="hp-sosmed-row">
+        <a class="hp-sosmed-box" id="hpTiktok" href="#" target="_blank" rel="noopener">
+          <i class="fa-brands fa-tiktok"></i><span>TikTok</span>
+        </a>
+        <a class="hp-sosmed-box" id="hpTelegram" href="#" target="_blank" rel="noopener">
+          <i class="fa-brands fa-telegram"></i><span>Telegram</span>
+        </a>
+        <a class="hp-sosmed-box" id="hpSaluran" href="#" target="_blank" rel="noopener">
+          <i class="fa-brands fa-whatsapp"></i><span>Saluran</span>
+        </a>
+      </div>
+
+      <div class="hp-infoupdate-card" id="hpInfoUpdateCard" onclick="hpOpenInfoUpdate()">
+        <div class="hp-infoupdate-title"><i class="fa-solid fa-bullhorn"></i> INFO UPDATE</div>
+        <div class="hp-infoupdate-row">
+          <div class="hp-infoupdate-icon"><i class="fa-solid fa-comments"></i></div>
+          <div class="hp-infoupdate-text" id="hpInfoUpdateText">Memuat info update...</div>
+          <i class="fa-solid fa-chevron-right hp-infoupdate-arrow"></i>
+        </div>
+      </div>
+
+      <!-- ══ LATEST NEWS ══ -->
+      <div class="hc-feed-section" id="newsFeedSection">
+        <div class="hc-feed-header">
+          <span class="hc-feed-title"><i class="fa-solid fa-newspaper"></i> Latest News</span>
+          <span class="hc-feed-count" id="newsFeedCount">1/1</span>
+        </div>
+        <div class="hc-feed-card" id="newsFeedCard"></div>
+        <div class="hc-feed-dots" id="newsFeedDots"></div>
+      </div>
+
+      <!-- ══ LATEST PHOTO UPDATE ══ -->
+      <div class="hc-feed-section" id="photoFeedSection">
+        <div class="hc-feed-header">
+          <span class="hc-feed-title"><i class="fa-solid fa-images"></i> Latest Photo Update</span>
+          <span class="hc-feed-count" id="photoFeedCount">1/1</span>
+        </div>
+        <div class="hc-feed-card" id="photoFeedCard"></div>
+        <div class="hc-feed-dots" id="photoFeedDots"></div>
+      </div>
+
+      <!-- ══ IKLAN / PROMOSI — samping-sampingan, geser horizontal ══ -->
+      <div class="hc-feed-section" id="promoFeedSection" style="display:none">
+        <div class="hc-feed-header">
+          <span class="hc-feed-title"><i class="fa-solid fa-bullhorn"></i> Iklan &amp; Promosi</span>
+          <span class="hc-feed-count" id="promoFeedCount">0 iklan</span>
+        </div>
+        <div class="hc-promo-row" id="promoFeedRow"></div>
+      </div>
+    </div>
+
+    <!-- AI CHAT -->
+    <div class="page" id="page-chat">
       <div class="hc-gold-particles" id="hcGoldParticles"></div>
       <div class="home-grid">
         <!-- Chat Panel -->
@@ -392,12 +484,6 @@
       </div>
     </div>
 
-    <!-- UPDATE -->
-    <div class="page" id="page-update">
-      <div class="page-title"><i class="fa-solid fa-bell" style="color:var(--accent)"></i>New Update</div>
-      <div id="updateList"></div>
-    </div>
-
     <!-- SAVE -->
     <div class="page" id="page-save">
       <div class="save-header">
@@ -459,11 +545,7 @@
 
   <nav class="bottom-nav">
     <div class="nav-item active" id="navHome" onclick="navTo('home',this)"><i class="fa-solid fa-house"></i>Home</div>
-    <div class="nav-item" id="navUpdate" onclick="navTo('update',this)">
-      <i class="fa-solid fa-bell"></i>
-      <span class="nav-badge" id="updateBadge"></span>
-      Update
-    </div>
+    <div class="nav-item" id="navChat" onclick="navTo('chat',this)"><i class="fa-solid fa-comment-dots"></i>AI Chat</div>
     <div class="nav-item" id="navSave" onclick="navTo('save',this)"><i class="fa-solid fa-floppy-disk"></i>Save</div>
     <div class="nav-item" id="navInfo" onclick="navTo('info',this)"><i class="fa-solid fa-circle-info"></i>Info</div>
   </nav>
