@@ -43,14 +43,6 @@ const CFG = {
       dev: "dev @renzzzzofc18",
       link: "",
     },
-        {
-      media_url: "https://files.catbox.moe/thgl22.jpg",
-      media_type: "video",
-      title: "HANAMORI CALYX AI",
-      subtitle: "Update & info terbaru seputar HC Community",
-      dev: "dev @renzzzzofc18",
-      link: "",
-    },
   ],
 
   /* ─── LATEST PHOTO UPDATE (kartu carousel di Home) ─── */
@@ -114,7 +106,8 @@ const CFG = {
   MAINTENANCE_MODE: "manual",       // "auto" = dengan timer | "manual" = sampai dimatiin manual
   MAINTENANCE_DURATION_HOURS: 2,
   MAINTENANCE_START: "",
-  MAINTENANCE_BG: "",
+  MAINTENANCE_BG: "",               // link gambar (.jpg/.png) buat background maintenance (opsional)
+  MAINT_WALLPAPER_VIDEO: "",        // link video (.mp4/.webm) buat background maintenance — kalau diisi, prioritas di atas MAINTENANCE_BG
 
   /* ─── BETA OVERLAY ───
    * SHOW_BETA: true = tampil, false = matiin
@@ -848,15 +841,6 @@ function _fzShowChat() {
   }
 }
 
-function maintCopyTip(text) {
-  navigator.clipboard.writeText(text).catch(() => {});
-  const toast = document.getElementById('maintQtToast');
-  if (!toast) return;
-  toast.textContent = '✅ Disalin! Paste setelah maintenance selesai ya 😄';
-  toast.style.display = 'block';
-  setTimeout(() => { toast.style.display = 'none'; }, 2800);
-}
-
 function spawnGoldParticles() {
   const container = document.getElementById('hcGoldParticles');
   if (!container) return;
@@ -893,6 +877,8 @@ async function loadMaintFromServer() {
     if (data && data.mode) CFG.MAINTENANCE_MODE = data.mode;
     if (data && data.durationHours) CFG.MAINTENANCE_DURATION_HOURS = data.durationHours;
     if (data && typeof data.start === 'string') CFG.MAINTENANCE_START = data.start;
+    if (data && typeof data.bg === 'string') CFG.MAINTENANCE_BG = data.bg;
+    if (data && typeof data.wallpaperVideo === 'string') CFG.MAINT_WALLPAPER_VIDEO = data.wallpaperVideo;
   } catch (e) {
     HC_CONSOLE.log('ERR', 'Gagal ambil status maintenance dari server, fallback ke lokal.');
     // fallback: pakai CFG.MAINTENANCE_TEXT bawaan (biasanya kosong = ga muncul)
@@ -900,19 +886,32 @@ async function loadMaintFromServer() {
   checkMaint();
 }
 
-// Wallpaper video maintenance: kalau CFG.MAINT_WALLPAPER_VIDEO diisi link video
-// (.mp4/.webm/dll), dipakai jadi background overlay maintenance. Kalau kosong,
-// fallback ke gradient + orb animasi seperti biasa.
+// Wallpaper maintenance: kalau CFG.MAINT_WALLPAPER_VIDEO diisi link video
+// (.mp4/.webm/dll), dipakai jadi background overlay. Kalau kosong tapi
+// CFG.MAINTENANCE_BG diisi link gambar (.jpg/.png/dll), dipakai sebagai
+// background gambar. Kalau dua-duanya kosong, fallback ke gradient krem biasa.
 function setMaintWallpaper() {
   const vid = document.getElementById('maintWallpaperVideo');
-  if (!vid) return;
-  const url = (CFG.MAINT_WALLPAPER_VIDEO || '').trim();
-  if (url) {
-    if (vid.getAttribute('src') !== url) vid.src = url;
+  const img = document.getElementById('maintWallpaperImage');
+  if (!vid || !img) return;
+  const videoUrl = (CFG.MAINT_WALLPAPER_VIDEO || '').trim();
+  const imageUrl = (CFG.MAINTENANCE_BG || '').trim();
+
+  if (videoUrl) {
+    if (vid.getAttribute('src') !== videoUrl) vid.src = videoUrl;
     vid.style.display = 'block';
+    img.style.display = 'none';
+    img.removeAttribute('src');
+  } else if (imageUrl) {
+    vid.style.display = 'none';
+    vid.removeAttribute('src');
+    if (img.getAttribute('src') !== imageUrl) img.src = imageUrl;
+    img.style.display = 'block';
   } else {
     vid.style.display = 'none';
     vid.removeAttribute('src');
+    img.style.display = 'none';
+    img.removeAttribute('src');
   }
 }
 
@@ -1668,6 +1667,7 @@ const HC_CONSOLE = {
         <div class="hcc-bar-right">
           <span class="hcc-status-dot" id="hccStatusDot"></span>
           <span class="hcc-status-txt" id="hccStatusTxt">IDLE</span>
+          <button class="hcc-expand" id="hccExpandBtn" onclick="HC_CONSOLE.toggleSize()" title="Perbesar/perkecil"><i class="fa-solid fa-expand"></i></button>
           <button class="hcc-close" onclick="HC_CONSOLE.toggle()">✕</button>
         </div>
       </div>
@@ -1763,6 +1763,14 @@ const HC_CONSOLE = {
   toggle() {
     this.visible = !this.visible;
     if (this.el) this.el.style.display = this.visible ? 'flex' : 'none';
+  },
+
+  toggleSize() {
+    if (!this.el) return;
+    this.el.classList.toggle('hcc-expanded');
+    const btn = document.getElementById('hccExpandBtn');
+    const expanded = this.el.classList.contains('hcc-expanded');
+    if (btn) btn.innerHTML = expanded ? '<i class="fa-solid fa-compress"></i>' : '<i class="fa-solid fa-expand"></i>';
   },
 
   clear() {
@@ -2020,7 +2028,7 @@ function newChat() {
   chatHistory = []; currentChatId = null; currentChatTitle = null;
   currentScripts = []; currentCode = ''; activeScriptIdx = 0;
   renderScriptTabs();
-  document.getElementById('chatMessages').innerHTML = `<div class="message ai"><div class="avatar ai"><img src="${CFG.AVATAR_AI_URL}" style="width:100%;height:100%;object-fit:cover"></div><div class="bubble">Halo! Aku <strong>HANAMORI CALYX AI v5.0</strong> — siap membantu! 🚀🎮<br><span style="font-size:.7rem;color:var(--muted)">Mau script Roblox apa hari ini? Tanya apa aja!</span><span class="msg-time">${getTime()}</span></div></div>`;
+  document.getElementById('chatMessages').innerHTML = `<div class="message ai"><div class="avatar ai"><img src="${CFG.AVATAR_AI_URL}" style="width:100%;height:100%;object-fit:cover"></div><div class="bubble">Halo! Aku <strong>HANAMORI CALYX AI v1.2</strong> — siap membantu! 🚀🎮<br><span style="font-size:.7rem;color:var(--muted)">Mau script Roblox apa hari ini? Tanya apa aja!</span><span class="msg-time">${getTime()}</span></div></div>`;
   // Kembali ke welcome screen setelah chat baru
   const fzW = document.getElementById('fzWelcome');
   const fzC = document.getElementById('chatMessages');

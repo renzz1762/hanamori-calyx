@@ -58,8 +58,9 @@
 
 <!-- ══ MAINTENANCE ══ -->
 <div id="maintOverlay">
-  <!-- Wallpaper: video kalau ada, fallback ke gradient/orbs -->
+  <!-- Wallpaper: video atau gambar (jpg/png), kalau ada. Fallback ke gradient/orbs -->
   <video id="maintWallpaperVideo" class="maint-wallpaper-video" src="" autoplay muted loop playsinline style="display:none"></video>
+  <img id="maintWallpaperImage" class="maint-wallpaper-image" src="" alt="" style="display:none">
   <div class="maint-bg-glass"></div>
   <div class="maint-bg-anim">
     <div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div><div class="maint-orb"></div>
@@ -118,15 +119,6 @@
     </div>
     <div class="maint-progress"><div class="maint-progress-bar" id="maintProgressBar" style="width:0%"></div></div>
     <div class="maint-eta" id="maintEta">Menghitung...</div>
-    <!-- QUICK TIPS BUTTONS -->
-    <div class="maint-quicktips-label"><i class="fa-solid fa-lightbulb"></i> Sambil Nunggu, Coba Ini:</div>
-    <div class="maint-quicktips-row">
-      <button class="maint-qt-btn" onclick="maintCopyTip('Buatkan script Fly GUI Roblox Studio dengan toggle button')"><i class="fa-solid fa-plane"></i> Script Fly Roblox</button>
-      <button class="maint-qt-btn" onclick="maintCopyTip('Buatkan website landing page keren dengan HTML CSS JS')"><i class="fa-solid fa-globe"></i> Website Keren</button>
-      <button class="maint-qt-btn" onclick="maintCopyTip('Buatkan Chat Tag GUI untuk Roblox Studio')"><i class="fa-solid fa-comment"></i> Chat Tag Roblox</button>
-      <button class="maint-qt-btn" onclick="maintCopyTip('Buatkan script Admin Panel Roblox Studio')"><i class="fa-solid fa-shield"></i> Admin Panel</button>
-    </div>
-    <div id="maintQtToast" class="maint-qt-toast" style="display:none"></div>
     <div id="maintSocmedRow" style="display:none;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:2"></div>
 
     <!-- Latest News & Photo Update — biar ga bosen nunggu maintenance -->
@@ -189,7 +181,7 @@
       <img class="drawer-logo-img" id="drawerLogoImg" src="" alt="HC">
       <div>
         <div class="drawer-logo-txt">HANAMORI CALYX</div>
-        <div style="font-size:.55rem;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px">AI v5.0</div>
+        <div style="font-size:.55rem;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px">AI v1.2</div>
       </div>
     </div>
     <div class="drawer-clock"><i class="fa-regular fa-clock" style="font-size:.75rem"></i><span id="drawerTime">00:00</span></div>
@@ -200,7 +192,7 @@
     <div class="drawer-item active-page" id="dmHome" onclick="drawerNav('home','dmHome')"><i class="fa-solid fa-house"></i>Home</div>
     <div class="drawer-item" id="dmChat" onclick="drawerNav('chat','dmChat')"><i class="fa-solid fa-comment-dots"></i>AI Chat</div>
     <div class="drawer-item" id="dmSave" onclick="drawerNav('save','dmSave')"><i class="fa-solid fa-floppy-disk"></i>Save Script</div>
-    <div class="drawer-item" id="dmInfo" onclick="drawerNav('info','dmInfo')"><i class="fa-solid fa-circle-info"></i>Info &amp; Developer</div>
+    <div class="drawer-item" id="dmInfo" onclick="drawerNav('info','dmInfo')"><i class="fa-solid fa-toolbox"></i>Tools &amp; Info</div>
     <div class="drawer-sep"></div>
     <div class="drawer-section-label">Tools</div>
     <div class="drawer-item" onclick="copyCode();closeDrawer()"><i class="fa-solid fa-clipboard"></i>Salin Code Aktif</div>
@@ -253,7 +245,7 @@
       </div>
       <div>
         <div class="logo-text">HC COMMUNITY</div>
-        <div class="logo-sub">v5.0 Roblox Expert • Anti-Jailbreak • Smart</div>
+        <div class="logo-sub">v1.2 Roblox Expert • Anti-Jailbreak • Smart</div>
       </div>
     </div>
     <div class="header-clock">
@@ -367,7 +359,7 @@
               <div class="fz-logo-box" id="fzLogoBox"><img id="fzLogoImg" src="" alt="HC"><span id="fzLogoTxt">HC</span></div>
               <div class="fz-header-titles">
                 <span class="fz-header-name"><span class="fz-accent">HANAMORI</span> CALYX AI</span>
-                <span class="fz-header-sub">v5.0 • Roblox Expert</span>
+                <span class="fz-header-sub">v1.2 • Roblox Expert</span>
               </div>
             </div>
             <div class="fz-header-right">
@@ -409,7 +401,7 @@
               </div>
               <div class="bubble">
                 <div class="ai-name-badge">HANAMORI CALYX <span class="ai-verified-icon"><svg viewBox="0 0 12 10" xmlns="http://www.w3.org/2000/svg"><polyline points="1,5 4.5,8.5 11,1.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-                Halo! Aku <strong>HANAMORI CALYX AI v5.0</strong> 🚀<br><br>
+                Halo! Aku <strong>HANAMORI CALYX AI v1.2</strong> 🚀<br><br>
                 Tanya apa aja — ngobrol, coding, website, <strong>script Roblox Studio</strong>, matematika, dll!<br><br>
                 <span style="color:var(--muted);font-size:.7rem">🎮 Mau script Fly, Chat Tag, Hotbar, Admin Panel, dll? Tinggal bilang aja bro!</span>
                 <span style="color:var(--muted);font-size:.7rem;display:block;margin-top:4px">📋 Ketuk tombol <strong>Salin</strong> di bawah pesan untuk menyalin teks!</span>
@@ -493,9 +485,20 @@
       <div id="saveList"></div>
     </div>
 
-    <!-- INFO -->
+    <!-- INFO / TOOLS -->
     <div class="page" id="page-info">
       <div class="info-bg-overlay"></div>
+
+      <!-- Sub-navigasi Tools -->
+      <div class="tools-subtabs">
+        <button class="tools-tab-btn active" data-tools-tab="info" onclick="toolsSwitchTab('info',this)"><i class="fa-solid fa-circle-info"></i> Info</button>
+        <button class="tools-tab-btn" data-tools-tab="video" onclick="toolsSwitchTab('video',this)"><i class="fa-solid fa-video"></i> Mentahan Video</button>
+        <button class="tools-tab-btn" data-tools-tab="gfx" onclick="toolsSwitchTab('gfx',this)"><i class="fa-solid fa-layer-group"></i> Bahan GFX</button>
+        <button class="tools-tab-btn" data-tools-tab="bg" onclick="toolsSwitchTab('bg',this)"><i class="fa-solid fa-mountain-sun"></i> Background GFX</button>
+      </div>
+
+      <!-- TAB: INFO -->
+      <div class="tools-panel active" id="toolsPanel-info">
       <div class="info-hero">
         <!-- Avatar dengan centang biru REAL -->
         <div class="info-avatar-wrap">
@@ -514,8 +517,31 @@
           </svg>
         </div>
         <div class="info-dev-role" id="devRole">Lead Developer &amp; UI/UX Designer</div>
-        <div class="info-status"><div class="info-status-dot"></div><span id="appVersion">Sistem Online (v5.0.0)</span></div>
+        <div class="info-status"><div class="info-status-dot"></div><span id="appVersion">Sistem Online (v1.2.1)</span></div>
       </div>
+
+      <!-- DOWNLOAD DARI LINK (all platform) -->
+      <div class="info-section tools-link-section">
+        <div class="info-section-title"><i class="fa-solid fa-link"></i> Download dari Link (Semua Platform)</div>
+        <div class="tools-link-sub">Tempel link TikTok / Instagram / Facebook / Youtube / dll, sistem bakal ambil link download-nya otomatis.</div>
+        <div class="tools-link-platforms">
+          <span class="tools-platform-icon" title="TikTok"><i class="fa-brands fa-tiktok"></i></span>
+          <span class="tools-platform-icon" title="Instagram"><i class="fa-brands fa-instagram"></i></span>
+          <span class="tools-platform-icon" title="Facebook"><i class="fa-brands fa-facebook"></i></span>
+          <span class="tools-platform-icon" title="Youtube"><i class="fa-brands fa-youtube"></i></span>
+          <span class="tools-platform-icon" title="Twitter / X"><i class="fa-brands fa-x-twitter"></i></span>
+          <span class="tools-platform-icon" title="Threads"><i class="fa-brands fa-threads"></i></span>
+          <span class="tools-platform-icon" title="Snapchat"><i class="fa-brands fa-snapchat"></i></span>
+          <span class="tools-platform-icon" title="Pinterest"><i class="fa-brands fa-pinterest"></i></span>
+          <span class="tools-platform-icon tools-platform-more" title="Dan lainnya">+lainnya</span>
+        </div>
+        <div class="tools-link-inputrow">
+          <input type="text" id="toolsLinkInput" placeholder="Tempel link di sini..." onkeydown="if(event.key==='Enter')toolsDownloadByLink()">
+          <button class="tools-btn-download" id="toolsLinkBtn" onclick="toolsDownloadByLink()"><i class="fa-solid fa-magnifying-glass"></i> Proses</button>
+        </div>
+        <div id="toolsLinkResult"></div>
+      </div>
+
       <div class="info-section">
         <div class="info-section-title"><i class="fa-solid fa-circle-info"></i> Informasi Project</div>
         <div class="info-row-desc"><strong>HANAMORI CALYX AI v1.2</strong> — AI expert Roblox Studio serba bisa: Chat Tag, Fly GUI, Hotbar, Admin Panel, Freecam, Music Player, Sprint, Overhead, dan semua script GUI. Coding lengkap, ngobrol, website, matematika, voice input, multi-script, anti-jailbreak ultra. By HANAMORI CALYX AI.</div>
@@ -527,7 +553,7 @@
         <div class="info-row"><span class="info-row-label">Voice Input</span><span class="info-row-value">Web Speech API</span></div>
         <div class="info-row"><span class="info-row-label">Multi Script</span><span class="info-row-value">✅ Tab Support</span></div>
         <div class="info-row"><span class="info-row-label">Roblox Expert</span><span class="info-row-value">✅ GUI + LocalScript</span></div>
-        <div class="info-row"><span class="info-row-label">Versi</span><span class="info-row-value" id="versionVal">v5.0.0</span></div>
+        <div class="info-row"><span class="info-row-label">Versi</span><span class="info-row-value" id="versionVal">v1.2.1</span></div>
       </div>
       <div class="connect-section">
         <div class="connect-title"><i class="fa-solid fa-users"></i> Connect With Me</div>
@@ -539,6 +565,48 @@
         </div>
       </div>
       <div class="info-footer">DEVELOPER : &copy; <span id="infoYear"></span> RENZZOXV18 &nbsp;|&nbsp; By HANAMORI CALYX AI</div>
+      </div>
+      <!-- /TAB: INFO -->
+
+      <!-- TAB: MENTAHAN VIDEO -->
+      <div class="tools-panel" id="toolsPanel-video">
+        <div class="tools-search-row">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="toolsSearchVideo" placeholder="Cari mentahan video..." oninput="renderToolsVideos()">
+        </div>
+        <div class="tools-grid" id="toolsVideoGrid"></div>
+      </div>
+
+      <!-- TAB: BAHAN GFX -->
+      <div class="tools-panel" id="toolsPanel-gfx">
+        <div class="tools-search-row">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="toolsSearchGfx" placeholder="Cari bahan GFX..." oninput="renderToolsGfx()">
+        </div>
+        <div class="tools-grid" id="toolsGfxGrid"></div>
+      </div>
+
+      <!-- TAB: BACKGROUND GFX -->
+      <div class="tools-panel" id="toolsPanel-bg">
+        <div class="tools-search-row">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="toolsSearchBg" placeholder="Cari background GFX..." oninput="renderToolsBg()">
+        </div>
+        <div class="tools-grid" id="toolsBgGrid"></div>
+      </div>
+
+    </div>
+
+    <!-- Lightbox preview gambar (GFX / Background) -->
+    <div class="tools-lightbox" id="toolsLightbox" onclick="toolsCloseLightbox(event)">
+      <div class="tools-lightbox-box" onclick="event.stopPropagation()">
+        <img id="toolsLightboxImg" src="" alt="">
+        <div class="tools-lightbox-title" id="toolsLightboxTitle"></div>
+        <div class="tools-lightbox-actions">
+          <button class="tools-btn-download" id="toolsLightboxDownloadBtn"><i class="fa-solid fa-download"></i> Download</button>
+          <button class="tools-btn-close" onclick="toolsCloseLightbox(event)"><i class="fa-solid fa-xmark"></i> Tutup</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -547,7 +615,7 @@
     <div class="nav-item active" id="navHome" onclick="navTo('home',this)"><i class="fa-solid fa-house"></i>Home</div>
     <div class="nav-item" id="navChat" onclick="navTo('chat',this)"><i class="fa-solid fa-comment-dots"></i>AI Chat</div>
     <div class="nav-item" id="navSave" onclick="navTo('save',this)"><i class="fa-solid fa-floppy-disk"></i>Save</div>
-    <div class="nav-item" id="navInfo" onclick="navTo('info',this)"><i class="fa-solid fa-circle-info"></i>Info</div>
+    <div class="nav-item" id="navInfo" onclick="navTo('info',this)"><i class="fa-solid fa-toolbox"></i>Tools</div>
   </nav>
 </div>
 
@@ -555,5 +623,10 @@
 <script src="redemcode.js"></script>
 <script src="backpackredem.js"></script>
 <script src="main.js"></script>
+<!-- TOOLS: Mentahan Video / Bahan GFX / Background GFX -->
+<script src="product.js"></script>
+<script src="bahangfx.js"></script>
+<script src="backgroundgfx.js"></script>
+<script src="tools.js"></script>
 </body>
 </html>
