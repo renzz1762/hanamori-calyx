@@ -1643,6 +1643,30 @@ html,body{ background-image:radial-gradient(circle,rgba(0,0,0,.06) 1px,transpare
 .tools-card.bg-card .tools-thumb-wrap{ aspect-ratio:1/1; }
 .tools-thumb-img{ width:100%; height:100%; object-fit:cover; }
 .tools-thumb-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+.tools-thumb-playbtn{
+  position:absolute; left:8px; bottom:8px; z-index:5;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(0,0,0,.55); border:1.5px solid rgba(255,255,255,.75);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:.72rem; cursor:pointer; backdrop-filter:blur(2px);
+  transition:.15s;
+}
+.tools-thumb-playbtn:active{ transform:scale(.9); background:rgba(0,0,0,.75); }
+.tools-thumb-retrybtn{
+  position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:5;
+  display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+  background:rgba(0,0,0,.6); border:1.5px solid rgba(255,255,255,.75);
+  color:#fff; font-size:.62rem; font-family:'Share Tech Mono',monospace;
+  cursor:pointer; backdrop-filter:blur(2px); transition:.15s; white-space:nowrap;
+}
+.tools-thumb-retrybtn:active{ transform:translateX(-50%) scale(.93); background:rgba(0,0,0,.8); }
+.tools-thumb-retrybtn:disabled{ opacity:.7; }
+.tools-thumb-broken{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:6px; background:#fbf9f2; color:var(--muted); text-align:center; padding:10px;
+}
+.tools-thumb-broken i{ font-size:1.3rem; color:#c47a00; }
+.tools-thumb-broken span{ font-size:.58rem; font-family:'Share Tech Mono',monospace; }
 .tools-thumb-loading{ color:var(--muted); font-size:1.2rem; }
 .tools-badge-cat{
   position:absolute; top:6px; left:6px; background:var(--hc-gold);
@@ -1790,6 +1814,8 @@ html,body{ background-image:radial-gradient(circle,rgba(0,0,0,.06) 1px,transpare
 }
 .tools-link-btns{ display:flex; flex-wrap:wrap; gap:6px; }
 .tools-link-btns .tools-btn-download{ flex:0 0 auto; padding:7px 12px; font-size:.6rem; }
+.tools-link-btn-row{ display:flex; gap:4px; align-items:stretch; }
+.tools-link-btn-row .tools-btn-outline{ padding:7px 10px; font-size:.65rem; }
 
 /* ══════════════════════════════════════════════════════════════
    MAINTENANCE — FINAL CLEANUP: sisa warna cyan dari tema lama

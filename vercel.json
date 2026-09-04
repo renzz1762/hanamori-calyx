@@ -2,6 +2,8 @@
   "rewrites": [
     { "source": "/api/chat", "destination": "/api/chat.js" },
     { "source": "/api/maintenance", "destination": "/api/maintenance.js" },
-    { "source": "/api/download", "destination": "/api/download.js" }
+    { "source": "/api/download", "destination": "/api/download.js" },
+    { "source": "/api/video-proxy", "destination": "/api/video-proxy.js" },
+    { "source": "/api/proxy-download", "destination": "/api/proxy-download.js" }
   ]
 }
