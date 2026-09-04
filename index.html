@@ -122,13 +122,15 @@
     <div id="maintSocmedRow" style="display:none;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:2"></div>
 
     <!-- Latest News & Photo Update — biar ga bosen nunggu maintenance -->
-    <div class="maint-feed-section" id="maintNewsSection" style="display:none">
-      <div class="maint-feed-title"><i class="fa-solid fa-newspaper"></i> Latest News</div>
-      <div class="maint-feed-card" id="maintNewsCard"></div>
-    </div>
-    <div class="maint-feed-section" id="maintPhotoSection" style="display:none">
-      <div class="maint-feed-title"><i class="fa-solid fa-images"></i> Latest Photo Update</div>
-      <div class="maint-feed-card" id="maintPhotoCard"></div>
+    <div class="maint-feed-grid">
+      <div class="maint-feed-section" id="maintNewsSection" style="display:none">
+        <div class="maint-feed-title"><i class="fa-solid fa-newspaper"></i> Latest News</div>
+        <div class="maint-feed-card" id="maintNewsCard"></div>
+      </div>
+      <div class="maint-feed-section" id="maintPhotoSection" style="display:none">
+        <div class="maint-feed-title"><i class="fa-solid fa-images"></i> Latest Photo</div>
+        <div class="maint-feed-card" id="maintPhotoCard"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -181,7 +183,7 @@
       <img class="drawer-logo-img" id="drawerLogoImg" src="" alt="HC">
       <div>
         <div class="drawer-logo-txt">HANAMORI CALYX</div>
-        <div style="font-size:.55rem;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px">AI v1.2</div>
+        <div style="font-size:.55rem;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px">AI v5.0</div>
       </div>
     </div>
     <div class="drawer-clock"><i class="fa-regular fa-clock" style="font-size:.75rem"></i><span id="drawerTime">00:00</span></div>
@@ -193,6 +195,7 @@
     <div class="drawer-item" id="dmChat" onclick="drawerNav('chat','dmChat')"><i class="fa-solid fa-comment-dots"></i>AI Chat</div>
     <div class="drawer-item" id="dmSave" onclick="drawerNav('save','dmSave')"><i class="fa-solid fa-floppy-disk"></i>Save Script</div>
     <div class="drawer-item" id="dmInfo" onclick="drawerNav('info','dmInfo')"><i class="fa-solid fa-toolbox"></i>Tools &amp; Info</div>
+    <div class="drawer-item" onclick="navTo('anime', document.getElementById('navAnime'));closeDrawer()"><i class="fa-solid fa-clapperboard"></i>Nonton Anime <span class="nav-soon-badge" style="position:static;margin-left:6px">SOON</span></div>
     <div class="drawer-sep"></div>
     <div class="drawer-section-label">Tools</div>
     <div class="drawer-item" onclick="copyCode();closeDrawer()"><i class="fa-solid fa-clipboard"></i>Salin Code Aktif</div>
@@ -245,7 +248,7 @@
       </div>
       <div>
         <div class="logo-text">HC COMMUNITY</div>
-        <div class="logo-sub">v1.2 Roblox Expert • Anti-Jailbreak • Smart</div>
+        <div class="logo-sub">v5.0 Roblox Expert • Anti-Jailbreak • Smart</div>
       </div>
     </div>
     <div class="header-clock">
@@ -359,7 +362,7 @@
               <div class="fz-logo-box" id="fzLogoBox"><img id="fzLogoImg" src="" alt="HC"><span id="fzLogoTxt">HC</span></div>
               <div class="fz-header-titles">
                 <span class="fz-header-name"><span class="fz-accent">HANAMORI</span> CALYX AI</span>
-                <span class="fz-header-sub">v1.2 • Roblox Expert</span>
+                <span class="fz-header-sub">v5.0 • Roblox Expert</span>
               </div>
             </div>
             <div class="fz-header-right">
@@ -401,7 +404,7 @@
               </div>
               <div class="bubble">
                 <div class="ai-name-badge">HANAMORI CALYX <span class="ai-verified-icon"><svg viewBox="0 0 12 10" xmlns="http://www.w3.org/2000/svg"><polyline points="1,5 4.5,8.5 11,1.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-                Halo! Aku <strong>HANAMORI CALYX AI v1.2</strong> 🚀<br><br>
+                Halo! Aku <strong>HANAMORI CALYX AI v5.0</strong> 🚀<br><br>
                 Tanya apa aja — ngobrol, coding, website, <strong>script Roblox Studio</strong>, matematika, dll!<br><br>
                 <span style="color:var(--muted);font-size:.7rem">🎮 Mau script Fly, Chat Tag, Hotbar, Admin Panel, dll? Tinggal bilang aja bro!</span>
                 <span style="color:var(--muted);font-size:.7rem;display:block;margin-top:4px">📋 Ketuk tombol <strong>Salin</strong> di bawah pesan untuk menyalin teks!</span>
@@ -517,7 +520,7 @@
           </svg>
         </div>
         <div class="info-dev-role" id="devRole">Lead Developer &amp; UI/UX Designer</div>
-        <div class="info-status"><div class="info-status-dot"></div><span id="appVersion">Sistem Online (v1.2.1)</span></div>
+        <div class="info-status"><div class="info-status-dot"></div><span id="appVersion">Sistem Online (v5.0.0)</span></div>
       </div>
 
       <!-- DOWNLOAD DARI LINK (all platform) -->
@@ -553,7 +556,7 @@
         <div class="info-row"><span class="info-row-label">Voice Input</span><span class="info-row-value">Web Speech API</span></div>
         <div class="info-row"><span class="info-row-label">Multi Script</span><span class="info-row-value">✅ Tab Support</span></div>
         <div class="info-row"><span class="info-row-label">Roblox Expert</span><span class="info-row-value">✅ GUI + LocalScript</span></div>
-        <div class="info-row"><span class="info-row-label">Versi</span><span class="info-row-value" id="versionVal">v1.2.1</span></div>
+        <div class="info-row"><span class="info-row-label">Versi</span><span class="info-row-value" id="versionVal">v5.0.0</span></div>
       </div>
       <div class="connect-section">
         <div class="connect-title"><i class="fa-solid fa-users"></i> Connect With Me</div>
@@ -597,6 +600,21 @@
 
     </div>
 
+    <!-- NONTON ANIME (COMING SOON) -->
+    <div class="page" id="page-anime">
+      <div class="soon-page">
+        <div class="soon-icon-ring">
+          <i class="fa-solid fa-clapperboard soon-icon-inner"></i>
+        </div>
+        <div class="soon-badge"><i class="fa-solid fa-hourglass-half"></i> COMING SOON</div>
+        <div class="soon-title">Nonton Anime</div>
+        <div class="soon-desc">Fitur ini <strong>coming soon</strong> — masih dalam tahap pengembangan. Dev lagi nyiapin biar streaming-nya lancar & koleksinya lengkap. Sabar ya, ditunggu aja update selanjutnya!</div>
+        <div class="soon-progress"><div class="soon-progress-bar"></div></div>
+        <div class="soon-progress-label">Progress pengembangan</div>
+        <button class="soon-back-btn" onclick="navTo('home', document.getElementById('navHome'))"><i class="fa-solid fa-arrow-left"></i> Balik ke Home</button>
+      </div>
+    </div>
+
     <!-- Lightbox preview gambar (GFX / Background) -->
     <div class="tools-lightbox" id="toolsLightbox" onclick="toolsCloseLightbox(event)">
       <div class="tools-lightbox-box" onclick="event.stopPropagation()">
@@ -616,6 +634,7 @@
     <div class="nav-item" id="navChat" onclick="navTo('chat',this)"><i class="fa-solid fa-comment-dots"></i>AI Chat</div>
     <div class="nav-item" id="navSave" onclick="navTo('save',this)"><i class="fa-solid fa-floppy-disk"></i>Save</div>
     <div class="nav-item" id="navInfo" onclick="navTo('info',this)"><i class="fa-solid fa-toolbox"></i>Tools</div>
+    <div class="nav-item nav-item-soon" id="navAnime" onclick="navTo('anime',this)"><i class="fa-solid fa-clapperboard"></i>Anime<span class="nav-soon-badge">SOON</span></div>
   </nav>
 </div>
 

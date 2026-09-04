@@ -107,7 +107,11 @@ const CFG = {
   MAINTENANCE_DURATION_HOURS: 2,
   MAINTENANCE_START: "",
   MAINTENANCE_BG: "",               // link gambar (.jpg/.png) buat background maintenance (opsional)
-  MAINT_WALLPAPER_VIDEO: "",        // link video (.mp4/.webm) buat background maintenance — kalau diisi, prioritas di atas MAINTENANCE_BG
+  // Link video (.mp4/.webm) buat background maintenance — GANTI link di bawah ini
+  // sama video kamu sendiri (upload ke Vercel/CDN/Google Drive direct-link/dsb).
+  // Kalau diisi, prioritas di atas MAINTENANCE_BG. Ini cuma fallback offline —
+  // kontrol utama tetep di Environment Variable Vercel (field "wallpaperVideo").
+  MAINT_WALLPAPER_VIDEO: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
 
   /* ─── BETA OVERLAY ───
    * SHOW_BETA: true = tampil, false = matiin
@@ -1494,6 +1498,12 @@ function showToast(msg) {
   document.body.appendChild(t); setTimeout(() => t.remove(), 2800);
 }
 
+// Fitur yang masih dalam pengembangan (mis. Nonton Anime) — cukup kasih tau
+// user statusnya, jangan pindah halaman ke tempat kosong.
+function showComingSoon(featureName) {
+  showToast(`🚧 ${featureName} — Coming Soon! Lagi digarap dev, sabar ya`);
+}
+
 /* ================================================================
    HOME PAGE (Community / Profile)
 ================================================================ */
@@ -2028,7 +2038,7 @@ function newChat() {
   chatHistory = []; currentChatId = null; currentChatTitle = null;
   currentScripts = []; currentCode = ''; activeScriptIdx = 0;
   renderScriptTabs();
-  document.getElementById('chatMessages').innerHTML = `<div class="message ai"><div class="avatar ai"><img src="${CFG.AVATAR_AI_URL}" style="width:100%;height:100%;object-fit:cover"></div><div class="bubble">Halo! Aku <strong>HANAMORI CALYX AI v1.2</strong> — siap membantu! 🚀🎮<br><span style="font-size:.7rem;color:var(--muted)">Mau script Roblox apa hari ini? Tanya apa aja!</span><span class="msg-time">${getTime()}</span></div></div>`;
+  document.getElementById('chatMessages').innerHTML = `<div class="message ai"><div class="avatar ai"><img src="${CFG.AVATAR_AI_URL}" style="width:100%;height:100%;object-fit:cover"></div><div class="bubble">Halo! Aku <strong>HANAMORI CALYX AI v5.0</strong> — siap membantu! 🚀🎮<br><span style="font-size:.7rem;color:var(--muted)">Mau script Roblox apa hari ini? Tanya apa aja!</span><span class="msg-time">${getTime()}</span></div></div>`;
   // Kembali ke welcome screen setelah chat baru
   const fzW = document.getElementById('fzWelcome');
   const fzC = document.getElementById('chatMessages');

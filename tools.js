@@ -103,6 +103,44 @@ async function toolsLoadThumb(p) {
   }
 }
 
+// ===== PREVIEW VIDEO AUTOPLAY (mentahan video jadi "gerak" kaya Latest News) =====
+const toolsVideoPreviewCache = {};
+async function toolsGetVideoPreviewUrl(link) {
+  if (toolsVideoPreviewCache[link]) return toolsVideoPreviewCache[link];
+  try {
+    const api = `https://www.tikwm.com/api/?url=${encodeURIComponent(link)}`;
+    const res = await fetch(api);
+    const json = await res.json();
+    if (json.code !== 0 || !json.data || !json.data.play) throw new Error('no play url');
+    let playUrl = json.data.play;
+    if (playUrl.startsWith('/')) playUrl = 'https://www.tikwm.com' + playUrl;
+    toolsVideoPreviewCache[link] = playUrl;
+    return playUrl;
+  } catch (e) {
+    return '';
+  }
+}
+
+async function toolsLoadVideoPreview(p) {
+  // Poster dulu (thumbnail statis) biar ada yang keliatan selagi video-nya dimuat
+  await toolsLoadThumb(p);
+  const wrap = document.getElementById(`tools-thumbwrap-${p.id}`);
+  const img = document.getElementById(`tools-thumb-${p.id}`);
+  const loading = document.getElementById(`tools-loading-${p.id}`);
+  if (!wrap) return;
+  const playUrl = await toolsGetVideoPreviewUrl(p.tiktok);
+  if (!playUrl) return; // gagal ambil video asli, tetep pakai thumbnail statis
+  const video = document.createElement('video');
+  video.className = 'tools-thumb-video';
+  video.src = playUrl;
+  video.autoplay = true; video.muted = true; video.loop = true; video.playsInline = true;
+  if (img && img.src) video.poster = img.src;
+  video.onerror = () => { video.remove(); if (img) img.style.display = 'block'; };
+  wrap.insertBefore(video, wrap.firstChild);
+  if (img) img.style.display = 'none';
+  if (loading) loading.style.display = 'none';
+}
+
 // ===== RENDER: MENTAHAN VIDEO (data: PRODUCTS dari product.js) =====
 function renderToolsVideos() {
   const input = document.getElementById('toolsSearchVideo');
@@ -116,7 +154,7 @@ function renderToolsVideos() {
 
   grid.innerHTML = filtered.map(p => `
     <div class="tools-card video-card">
-      <div class="tools-thumb-wrap">
+      <div class="tools-thumb-wrap" id="tools-thumbwrap-${p.id}">
         <img class="tools-thumb-img" id="tools-thumb-${p.id}" src="" alt="${toolsEsc(p.title)}" style="display:none">
         <div class="tools-thumb-loading" id="tools-loading-${p.id}"><i class="fa-solid fa-spinner fa-spin"></i></div>
         <span class="tools-badge-cat">${toolsEsc(p.category || 'mentahan')}</span>
@@ -132,7 +170,7 @@ function renderToolsVideos() {
     </div>
   `).join('');
 
-  filtered.forEach(toolsLoadThumb);
+  filtered.forEach(toolsLoadVideoPreview);
 }
 
 // ===== RENDER: BAHAN GFX (data: BAHAN_GFX dari bahangfx.js) =====
