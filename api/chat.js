@@ -115,7 +115,17 @@ module.exports = async function handler(req, res) {
     if (!overchatMessages.length)
       return res.status(400).json({ error: { message: "No messages" } });
 
-    const answer = await callOverchat(overchatMessages);
+    // Coba sampai 3x (tiap percobaan pakai chatId & deviceId baru)
+    let answer = "", lastErr = null;
+    for (let i = 0; i < 3 && !answer.trim(); i++) {
+      try {
+        answer = await callOverchat(overchatMessages);
+      } catch (e) {
+        lastErr = e;
+        console.error(`[Overchat] percobaan ${i + 1} gagal:`, e.message);
+      }
+    }
+    if (!answer.trim() && lastErr) throw lastErr;
 
     return res.status(200).json({
       choices: [{
